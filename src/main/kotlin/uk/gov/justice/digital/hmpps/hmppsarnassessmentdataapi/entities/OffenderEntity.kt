@@ -1,13 +1,18 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities
 
 import java.io.Serializable
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
-import javax.persistence.*
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
+import javax.persistence.GeneratedValue
+import javax.persistence.GenerationType
+import javax.persistence.Id
+import javax.persistence.Table
 
 @Entity
-@Table(name = "offender", schema= "arnassessmentdata")
+@Table(name = "offender", schema = "arnassessmentdata")
 data class OffenderEntity(
   @Id
   @Column(name = "id")
@@ -30,6 +35,4 @@ data class OffenderEntity(
   @Column(name = "created_date")
   val createdDate: LocalDateTime? = LocalDateTime.now(),
 
-  ) : Serializable {
-
-}
+) : Serializable
