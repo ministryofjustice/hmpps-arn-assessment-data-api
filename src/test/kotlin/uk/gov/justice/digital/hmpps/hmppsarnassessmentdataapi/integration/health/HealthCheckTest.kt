@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.integration.health
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Ignore
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.integration.IntegrationTestBase
 import java.time.LocalDateTime
@@ -9,6 +10,7 @@ import java.util.function.Consumer
 
 class HealthCheckTest : IntegrationTestBase() {
 
+  @Ignore
   @Test
   fun `Health page reports ok`() {
     webTestClient.get()
@@ -20,6 +22,7 @@ class HealthCheckTest : IntegrationTestBase() {
       .jsonPath("status").isEqualTo("UP")
   }
 
+  @Ignore
   @Test
   fun `Health info reports version`() {
     webTestClient.get().uri("/health")
