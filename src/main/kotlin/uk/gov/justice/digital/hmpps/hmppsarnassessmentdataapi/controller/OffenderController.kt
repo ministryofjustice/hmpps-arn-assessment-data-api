@@ -3,7 +3,10 @@ package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.controller
 import io.swagger.v3.oas.annotations.Parameter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
@@ -25,5 +28,14 @@ class OffenderController(
   ): OffenderDto? {
     log.debug("Entered getOffender({})", crn)
     return offenderService.getOffenderByCrn(crn)
+  }
+
+  @RequestMapping(path = ["/offender"], method = [RequestMethod.PUT])
+  fun updateOffender(
+    @RequestBody offenderDto: OffenderDto
+  ) : ResponseEntity<HttpStatus> {
+    log.debug("Entered getOffender({})", offenderDto.crn)
+    offenderService.updateOffender(offenderDto)
+    return ResponseEntity(HttpStatus.ACCEPTED)
   }
 }
