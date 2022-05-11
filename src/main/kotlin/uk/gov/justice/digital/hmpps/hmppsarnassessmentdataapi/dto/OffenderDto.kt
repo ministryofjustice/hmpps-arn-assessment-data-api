@@ -5,7 +5,7 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities.OffenderE
 import java.time.LocalDateTime
 
 data class OffenderDto(
-  val id: Long? = null,
+  val id: Long,
   val firstName: String? = null,
   val lastName: String? = null,
   val crn: String,

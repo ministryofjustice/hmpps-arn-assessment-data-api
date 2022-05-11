@@ -25,7 +25,7 @@ class OffenderService(
     log.debug("Entered updateOffender({})", offenderDto.crn)
     val offenderEntity = offenderRepository.findByCrn(offenderDto.crn)
 
-    if(offenderEntity == null) {
+    if (offenderEntity == null) {
       throw IllegalArgumentException("Offender not found for crn" + (offenderDto.crn))
     }
 
