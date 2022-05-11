@@ -7,7 +7,6 @@ import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
-import javax.persistence.ManyToOne
 import javax.persistence.OneToMany
 import javax.persistence.Table
 
@@ -35,4 +34,4 @@ data class AssessmentEntity(
   @Column(name = "completed_date")
   val completedDate: LocalDateTime? = null,
 
-  ) : Serializable
+) : Serializable

@@ -33,7 +33,7 @@ class OffenderController(
   @RequestMapping(path = ["/offender"], method = [RequestMethod.PUT])
   fun updateOffender(
     @RequestBody offenderDto: OffenderDto
-  ) : ResponseEntity<HttpStatus> {
+  ): ResponseEntity<HttpStatus> {
     log.debug("Entered getOffender({})", offenderDto.crn)
     offenderService.updateOffender(offenderDto)
     return ResponseEntity(HttpStatus.ACCEPTED)
