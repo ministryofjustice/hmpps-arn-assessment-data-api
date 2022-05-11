@@ -22,6 +22,9 @@ data class AssessmentEntity(
   @Column(name = "assessment_type")
   val assessmentType: String,
 
+  @Column(name = "version")
+  val version: String,
+
   @OneToMany(mappedBy = "id")
   @Column(name = "support_needs_id")
   var supportNeeds: MutableList<SupportNeedEntity> = mutableListOf(),
@@ -29,8 +32,7 @@ data class AssessmentEntity(
   @Column(name = "created_date")
   val createdDate: LocalDateTime? = LocalDateTime.now(),
 
-  @Column(name = "version")
-  val version: String,
-
+  @Column(name = "completed_date")
+  val completedDate: LocalDateTime? = null,
 
   ) : Serializable
