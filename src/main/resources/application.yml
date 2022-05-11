@@ -1,6 +1,10 @@
 info.app:
   name: Hmpps Arn Assessment Data Api
   version: 1.0
+flyway:
+  enabled: true
+  baseline-on-migrate: true
+  baselineOnMigrate: true
 
 spring:
   application:
@@ -9,7 +13,8 @@ spring:
     max-in-memory-size: 10MB
   flyway:
     enabled: true
-
+    baseline-on-migrate: true
+    baselineOnMigrate: true
 
   jackson:
     date-format: "yyyy-MM-dd HH:mm:ss"
@@ -68,7 +73,6 @@ management:
 
 logging:
   level:
-    root: DEBUG
     org:
       hibernate: DEBUG
     uk:
