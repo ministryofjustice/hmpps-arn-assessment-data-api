@@ -1,17 +1,38 @@
 version: "3"
 services:
-  hmpps-arn-assessment-data-api:
-    build:
-      context: .
-    network_mode: "host"
-    container_name: hmpps-arn-assessment-data-api
+#  hmpps-arn-assessment-data-api:
+#    build:
+#      context: .
+#    network_mode: "host"
+#    container_name: hmpps-arn-assessment-data-api
+#    ports:
+#      - "8081:8080"
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ping"]
+#    environment:
+#      - SERVER_PORT=8080
+#      - SPRING_PROFILES_ACTIVE=dev
+
+  postgres:
+    image: postgres
+    restart: always
     ports:
-      - "8081:8080"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ping"]
+      - 5432:5432
+    networks:
+      - hmpps
     environment:
-      - SERVER_PORT=8080
-      - SPRING_PROFILES_ACTIVE=dev
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: dev
+    tmpfs:
+      - /var/lib/postgresql
+
+  redis:
+    image: "redis:6.2.3-alpine"
+    networks:
+      - hmpps
+    ports:
+      - "6379:6379"
 
 networks:
   hmpps:
+
