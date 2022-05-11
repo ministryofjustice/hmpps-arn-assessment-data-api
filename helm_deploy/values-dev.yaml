@@ -1,16 +1,30 @@
 ---
 # Per environment values which override defaults in hmpps-arn-assessment-data-api/values.yaml
 
-generic-service:
-  replicaCount: 2
+replicaCount: 2
 
-  ingress:
-    host: hmpps-arn-assessment-data-api-dev.hmpps.service.justice.gov.uk
+ingress:
+  enabled: true
+  enable_allow_list: true
+  host: hmpps-arn-assessment-data-api-dev.hmpps.service.justice.gov.uk
+  cert_secret: hmpps-assessments-api-cert
+  path: /
+  identifier: green
+  weighting: 100
 
-  env:
-    APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
+allow_list:
+  office: "217.33.148.210/32"
+  health-kick: "35.177.252.195/32"
+  mojvpn: "81.134.202.29/32"
+  cloudplatform-live1-1: "35.178.209.113/32"
+  cloudplatform-live1-2: "3.8.51.207/32"
+  cloudplatform-live1-3: "35.177.252.54/32"
+
+env:
+  JAVA_OPTS: "-Xmx512m -Duser.timezone=UTC"
+  SPRING_PROFILES_ACTIVE: "logstash,postgres,dev"
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
-  alertSeverity: digital-prison-service-dev
+  enabled: false
