@@ -11,7 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 class ResourceServerConfiguration : WebSecurityConfigurerAdapter() {
   override fun configure(http: HttpSecurity) {
-    http
+    http.cors().and().csrf().disable()
       .authorizeRequests()
       .antMatchers("/**").permitAll()
       .anyRequest().authenticated()

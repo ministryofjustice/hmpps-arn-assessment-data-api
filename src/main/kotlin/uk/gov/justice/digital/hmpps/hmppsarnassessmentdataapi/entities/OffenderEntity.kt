@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities
 
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.dto.OffenderDto
 import java.io.Serializable
 import java.time.LocalDateTime
 import javax.persistence.Column
@@ -20,19 +21,32 @@ data class OffenderEntity(
   val id: Long? = null,
 
   @Column(name = "first_name")
-  val firstName: String? = null,
+  var firstName: String?,
 
   @Column(name = "last_name")
-  val lastName: String? = null,
+  var lastName: String?,
 
   @Column(name = "crn")
   val crn: String,
 
   @Column(name = "gender")
   @Enumerated(EnumType.STRING)
-  val gender: Gender? = null,
+  var gender: Gender?,
 
   @Column(name = "created_date")
   val createdDate: LocalDateTime? = LocalDateTime.now(),
 
-) : Serializable
+//  @OneToMany(mappedBy = "offender", cascade = [CascadeType.ALL])
+//  val assessments: MutableList<AssessmentEntity> = mutableListOf(),
+
+) : Serializable {
+  companion object {
+    fun update(offenderDto: OffenderDto, offenderEntity: OffenderEntity) {
+      offenderEntity.run {
+        firstName = offenderDto.firstName
+        lastName = offenderDto.lastName
+        gender = offenderDto.gender
+      }
+    }
+  }
+}
