@@ -15,10 +15,6 @@ configurations {
   implementation { exclude(mapOf("module" to "tomcat-jdbc")) }
 }
 
-dependencyCheck {
-  suppressionFiles.add("suppressions.xml")
-}
-
 dependencies {
 
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
