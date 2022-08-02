@@ -12,7 +12,6 @@ generic-service:
   ingress:
     enabled: true
     v1_2_enabled: true
-    v0_47_enabled: true
     host: app-hostname.local    # override per environment
     tlsSecretName: hmpps-arn-assessment-data-api-cert
 
