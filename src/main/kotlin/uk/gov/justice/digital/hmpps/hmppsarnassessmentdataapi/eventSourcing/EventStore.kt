@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing
 
 class EventStore {
-  fun save(event: CreateAddressEvent) {
+  fun save(event: Event) {
 
   }
 
-  fun getAll(): List<CreateAddressEvent> {
+  fun getAll(): List<Event> {
     TODO("Not yet implemented")
   }
 }

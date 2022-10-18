@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing
 
-interface Event
-
-abstract class AddressEvent(val type:  AggregateType = AggregateType.ADDRESS): Event
+interface Event {
+  val type: AggregateType
+  val data: Map<String, String>
+}
