@@ -14,3 +14,5 @@ class UpdateAddress(
   val buildingName: String,
   val postcode: String
 ) : Command()
+
+class ApproveAddressChange() : Command()

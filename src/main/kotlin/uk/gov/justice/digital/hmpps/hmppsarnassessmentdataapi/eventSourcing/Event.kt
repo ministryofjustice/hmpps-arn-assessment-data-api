@@ -1,27 +1,37 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing
 
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CREATE_ADDRESS
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.UPDATE_ADDRESS
+import java.time.Instant
 
 interface Event {
-  val type: AggregateType
+  val aggregateType: AggregateType
   val eventType: EventType
+  val createdOn: Instant
   val data: Map<String, String>
 }
 
 enum class EventType {
-  CREATE_ADDRESS,
-  UPDATE_ADDRESS,
+  CREATED_ADDRESS,
+  CHANGED_ADDRESS,
+  CHANGES_APPROVED,
 }
 
-abstract class AddressEvent(override val type: AggregateType = AggregateType.ADDRESS) : Event
+abstract class BaseEvent(final override val createdOn: Instant = Instant.now()) : Event
 
-data class CreateAddressEvent(
-  override val eventType: EventType = CREATE_ADDRESS,
+abstract class AddressEvent(
+  final override val aggregateType: AggregateType = AggregateType.ADDRESS,
+) : BaseEvent()
+
+data class AddressChangeApproved(
+  override val eventType: EventType = EventType.CHANGES_APPROVED,
   override val data: Map<String, String>,
 ) : AddressEvent()
 
-data class UpdateAddressEvent(
-  override val eventType: EventType = UPDATE_ADDRESS,
+data class CreatedAddress(
+  override val eventType: EventType = EventType.CREATED_ADDRESS,
+  override val data: Map<String, String>,
+) : AddressEvent()
+
+data class ChangedAddress(
+  override val eventType: EventType = EventType.CHANGED_ADDRESS,
   override val data: Map<String, String>,
 ) : AddressEvent()

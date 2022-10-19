@@ -1,15 +1,15 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing
 
-class Address(val eventStore: EventStore) {
+class Address(private val eventStore: EventStore) {
   fun handle(command: Command) {
     val event = when (command) {
-      is CreateAddress -> CreateAddressEvent(
+      is CreateAddress -> CreatedAddress(
         data = mapOf(
           "buildingName" to command.buildingName,
           "postcode" to command.postcode
         )
       )
-      is UpdateAddress -> UpdateAddressEvent(
+      is UpdateAddress -> ChangedAddress(
         data = mapOf(
           "buildingName" to command.buildingName,
           "postcode" to command.postcode
