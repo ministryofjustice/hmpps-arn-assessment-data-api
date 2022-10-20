@@ -7,5 +7,5 @@ import java.util.*
 
 @Repository
 interface EventRepository : JpaRepository<EventEntity, Long> {
-  fun findAllByAggregateId(uuid: UUID): List<EventEntity>
+  fun findAllByAggregateIdOrderByCreatedOnAsc(uuid: UUID): List<EventEntity>
 }

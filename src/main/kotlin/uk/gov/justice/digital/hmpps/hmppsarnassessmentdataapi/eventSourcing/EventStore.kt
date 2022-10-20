@@ -12,6 +12,6 @@ class EventStore(val eventRepository: EventRepository) {
   }
 
   fun getAllEvents(uuid: UUID): List<EventEntity> {
-    return eventRepository.findAllByAggregateId(uuid)
+    return eventRepository.findAllByAggregateIdOrderByCreatedOnAsc(uuid)
   }
 }

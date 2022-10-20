@@ -7,5 +7,5 @@ import java.util.*
 
 @Repository
 interface AddressRepository : JpaRepository<AddressEntity, Long> {
-  fun findByUuid(uuid: UUID): AddressEntity?
+  fun existsByUuid(uuid: UUID): Boolean
 }

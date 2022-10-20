@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities.EventEntity
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AggregateType.ADDRESS
@@ -9,56 +11,81 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Even
 import java.util.*
 
 data class AddressState(
-  var buildingName: String? = null,
+  var building: String? = null,
   var postcode: String? = null
+)
+
+data class CreateAddress(
+  val building: String,
+  val postcode: String,
+)
+
+data class ChangeAddress(
+  val building: String? = null,
+  val postcode: String? = null,
 )
 
 @Service
 class Address(val eventStore: EventStore, val stateStore: StateStore) {
-  fun create(buildingName: String, postcode: String) {
-    val rootUuid = stateStore.createNewAddress()
+
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
+
+  fun create(request: CreateAddress): UUID {
+    val uuid = stateStore.createNewAddress()
+
     eventStore.save(
       EventEntity(
-        aggregateId = rootUuid,
+        aggregateId = uuid,
         aggregateType = ADDRESS,
         eventType = CREATED_ADDRESS,
         values = mapOf(
-          "buildingName" to buildingName,
-          "postcode" to postcode
+          "building" to request.building,
+          "postcode" to request.postcode,
         ),
       )
     )
+
+    log.info("Created new address: $uuid")
+
+    return uuid
   }
 
-  fun update(uuid: UUID, buildingName: String?, postcode: String?) {
-    val root = stateStore.find(uuid)
-    root.let {
+  fun change(uuid: UUID, request: ChangeAddress) {
+    val addressExists = stateStore.checkAddressExists(uuid)
+
+    if (addressExists) {
       eventStore.save(
         EventEntity(
-          aggregateId = root!!.uuid,
+          aggregateId = uuid,
           aggregateType = ADDRESS,
           eventType = CHANGED_ADDRESS,
           values = mapOf(
-            "buildingName" to buildingName,
-            "postcode" to postcode
+            "building" to request.building,
+            "postcode" to request.postcode,
           ),
         )
       )
+
+      log.info("Changed address: $uuid")
     }
   }
 
-  fun approveChanges(uuid: UUID) {
-    val root = stateStore.find(uuid)
+  fun markAsApproved(uuid: UUID) {
+    val addressExists = stateStore.checkAddressExists(uuid)
 
-    if (root != null) {
+    if (addressExists) {
       eventStore.save(
         EventEntity(
-          aggregateId = root.uuid,
+          aggregateId = uuid,
           aggregateType = ADDRESS,
           eventType = CHANGES_APPROVED,
           values = emptyMap(),
         )
       )
+
+      log.info("Approved changes for address: $uuid")
     }
   }
 
@@ -83,12 +110,12 @@ class Address(val eventStore: EventStore, val stateStore: StateStore) {
 private fun applyEvent(state: AddressState, event: EventEntity): AddressState {
   when (event.eventType) {
     CREATED_ADDRESS -> {
-      state.buildingName = event.values["buildingName"]
+      state.building = event.values["building"]
       state.postcode = event.values["postcode"]
     }
     CHANGED_ADDRESS -> {
-      if (!event.values["buildingName"].isNullOrEmpty()) {
-        state.buildingName = event.values["buildingName"]
+      if (!event.values["building"].isNullOrEmpty()) {
+        state.building = event.values["building"]
       }
       if (!event.values["postcode"].isNullOrEmpty()) {
         state.postcode = event.values["postcode"]

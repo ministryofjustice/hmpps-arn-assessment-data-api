@@ -7,8 +7,8 @@ import java.util.*
 
 @Service
 class StateStore(private val addressRepository: AddressRepository) {
-  fun find(uuid: UUID): AddressEntity? {
-    return addressRepository.findByUuid(uuid)
+  fun checkAddressExists(uuid: UUID): Boolean {
+    return addressRepository.existsByUuid(uuid)
   }
 
   fun createNewAddress(): UUID {
