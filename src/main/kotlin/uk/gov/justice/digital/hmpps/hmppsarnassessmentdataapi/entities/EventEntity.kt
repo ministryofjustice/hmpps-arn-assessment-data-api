@@ -39,10 +39,6 @@ class EventEntity(
   @Column(name = "created_by")
   val createdBy: String = "Unknown",
 
-  @Column(name = "aggregate_type")
-  @Enumerated(EnumType.STRING)
-  val aggregateType: AggregateType,
-
   @Column(name = "aggregate_id")
   val aggregateId: UUID,
 

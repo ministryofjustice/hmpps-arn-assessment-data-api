@@ -11,8 +11,8 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Even
 import java.util.*
 
 data class AddressState(
-  var building: String? = null,
-  var postcode: String? = null
+  var building: String? = "",
+  var postcode: String? = "",
 )
 
 data class CreateAddress(
@@ -21,24 +21,23 @@ data class CreateAddress(
 )
 
 data class ChangeAddress(
-  val building: String? = null,
-  val postcode: String? = null,
+  val building: String,
+  val postcode: String,
 )
 
 @Service
-class Address(val eventStore: EventStore, val stateStore: StateStore) {
+class Address(val eventStore: EventStore, val aggregateStore: AggregateStore) {
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
   fun create(request: CreateAddress): UUID {
-    val uuid = stateStore.createNewAddress()
+    val uuid = aggregateStore.createAggregateRoot(ADDRESS)
 
     eventStore.save(
       EventEntity(
         aggregateId = uuid,
-        aggregateType = ADDRESS,
         eventType = CREATED_ADDRESS,
         values = mapOf(
           "building" to request.building,
@@ -53,13 +52,12 @@ class Address(val eventStore: EventStore, val stateStore: StateStore) {
   }
 
   fun change(uuid: UUID, request: ChangeAddress) {
-    val addressExists = stateStore.checkAddressExists(uuid)
-
+    val addressExists = aggregateStore.checkAggregateRootExists(uuid)
+    // can we make this smarter? like a diff?
     if (addressExists) {
       eventStore.save(
         EventEntity(
           aggregateId = uuid,
-          aggregateType = ADDRESS,
           eventType = CHANGED_ADDRESS,
           values = mapOf(
             "building" to request.building,
@@ -73,13 +71,12 @@ class Address(val eventStore: EventStore, val stateStore: StateStore) {
   }
 
   fun markAsApproved(uuid: UUID) {
-    val addressExists = stateStore.checkAddressExists(uuid)
+    val addressExists = aggregateStore.checkAggregateRootExists(uuid)
 
     if (addressExists) {
       eventStore.save(
         EventEntity(
           aggregateId = uuid,
-          aggregateType = ADDRESS,
           eventType = CHANGES_APPROVED,
           values = emptyMap(),
         )
@@ -110,16 +107,12 @@ class Address(val eventStore: EventStore, val stateStore: StateStore) {
 private fun applyEvent(state: AddressState, event: EventEntity): AddressState {
   when (event.eventType) {
     CREATED_ADDRESS -> {
-      state.building = event.values["building"]
-      state.postcode = event.values["postcode"]
+      state.building = event.values["building"].orEmpty()
+      state.postcode = event.values["postcode"].orEmpty()
     }
     CHANGED_ADDRESS -> {
-      if (!event.values["building"].isNullOrEmpty()) {
-        state.building = event.values["building"]
-      }
-      if (!event.values["postcode"].isNullOrEmpty()) {
-        state.postcode = event.values["postcode"]
-      }
+      state.building = event.values["building"].orEmpty()
+      state.postcode = event.values["postcode"].orEmpty()
     }
     CHANGES_APPROVED -> {} // skip events that don't build the aggregate
   }

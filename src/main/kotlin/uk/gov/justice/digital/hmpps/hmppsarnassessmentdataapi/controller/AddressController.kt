@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Address
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AddressWithChanges
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AddressState
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CreateAddress
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.ChangeAddress
