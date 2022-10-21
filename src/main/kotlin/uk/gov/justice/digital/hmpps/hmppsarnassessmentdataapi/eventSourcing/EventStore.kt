@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities.EventEntity
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.repositories.EventRepository
-import java.util.*
+import java.util.UUID
 
 @Service
 class EventStore(val eventRepository: EventRepository) {

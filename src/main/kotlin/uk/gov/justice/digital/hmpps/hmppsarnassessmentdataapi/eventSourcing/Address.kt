@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Aggr
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CHANGED_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CHANGES_APPROVED
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CREATED_ADDRESS
-import java.util.*
+import java.util.UUID
 
 data class AddressState(
   var building: String? = "",
@@ -25,6 +25,22 @@ data class ChangeAddress(
   val postcode: String,
 )
 
+data class CommandResponse(
+  val aggregateId: UUID,
+  val eventType: EventType,
+  val values: Map<String, String>
+) {
+  companion object {
+    fun from(event: EventEntity): CommandResponse {
+      return CommandResponse(
+        event.aggregateId,
+        event.eventType,
+        event.values,
+      )
+    }
+  }
+}
+
 @Service
 class Address(val eventStore: EventStore, val aggregateStore: AggregateStore) {
 
@@ -32,58 +48,61 @@ class Address(val eventStore: EventStore, val aggregateStore: AggregateStore) {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun create(request: CreateAddress): UUID {
+  fun create(request: CreateAddress): CommandResponse {
     val uuid = aggregateStore.createAggregateRoot(ADDRESS)
-
-    eventStore.save(
-      EventEntity(
-        aggregateId = uuid,
-        eventType = CREATED_ADDRESS,
-        values = mapOf(
-          "building" to request.building,
-          "postcode" to request.postcode,
-        ),
-      )
+    val event = EventEntity(
+      aggregateId = uuid,
+      eventType = CREATED_ADDRESS,
+      values = mapOf(
+        "building" to request.building,
+        "postcode" to request.postcode,
+      ),
     )
+
+    eventStore.save(event)
 
     log.info("Created new address: $uuid")
 
-    return uuid
+    return CommandResponse.from(event)
   }
 
-  fun change(uuid: UUID, request: ChangeAddress) {
+  fun change(uuid: UUID, request: ChangeAddress): CommandResponse {
     val addressExists = aggregateStore.checkAggregateRootExists(uuid)
+
+    val event = EventEntity(
+      aggregateId = uuid,
+      eventType = CHANGED_ADDRESS,
+      values = mapOf(
+        "building" to request.building,
+        "postcode" to request.postcode,
+      ),
+    )
+
     // can we make this smarter? like a diff?
     if (addressExists) {
-      eventStore.save(
-        EventEntity(
-          aggregateId = uuid,
-          eventType = CHANGED_ADDRESS,
-          values = mapOf(
-            "building" to request.building,
-            "postcode" to request.postcode,
-          ),
-        )
-      )
+      eventStore.save(event)
 
       log.info("Changed address: $uuid")
     }
+
+    return CommandResponse.from(event)
   }
 
-  fun markAsApproved(uuid: UUID) {
+  fun markAsApproved(uuid: UUID): CommandResponse {
     val addressExists = aggregateStore.checkAggregateRootExists(uuid)
+    val event =         EventEntity(
+      aggregateId = uuid,
+      eventType = CHANGES_APPROVED,
+      values = emptyMap(),
+    )
 
     if (addressExists) {
-      eventStore.save(
-        EventEntity(
-          aggregateId = uuid,
-          eventType = CHANGES_APPROVED,
-          values = emptyMap(),
-        )
-      )
+      eventStore.save(event)
 
       log.info("Approved changes for address: $uuid")
     }
+
+    return CommandResponse.from(event)
   }
 
   fun find(uuid: UUID): AddressState {

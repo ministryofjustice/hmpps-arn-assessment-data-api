@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities
 
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AggregateType
-import java.util.*
+import java.util.UUID
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.EnumType
