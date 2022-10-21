@@ -13,9 +13,9 @@ class CommandController(
   private val commandHandler: CommandHandler,
 ) {
   @RequestMapping(path = ["/command"], method = [RequestMethod.POST])
-  fun createAddress(
+  fun executeCommands(
     @RequestBody commands: List<Command>,
-  ): List<CommandResponse> {
+  ): List<List<CommandResponse>> {
     return commandHandler.handleAll(commands)
   }
 }

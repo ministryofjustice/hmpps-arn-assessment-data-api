@@ -21,25 +21,52 @@ data class Command(
 @Service
 class CommandHandler(
   val address: Address,
+  val addressStore: AddressStore,
 ) {
-  fun handleAll(commands: List<Command>): List<CommandResponse> {
+  fun handleAll(commands: List<Command>): List<List<CommandResponse>> {
     return commands.map { handle(it) }
   }
 
-  fun handle(command: Command): CommandResponse {
-    return when (command.type) {
-      CREATE_ADDRESS -> address.create(
+  fun handle(command: Command): List<CommandResponse> {
+    when (command.type) {
+      CREATE_ADDRESS -> {
+        val createdEvent = address.create(
           CreateAddress(
             building = command.values["building"].orEmpty(),
             postcode = command.values["postcode"].orEmpty(),
-          ))
-      CHANGE_ADDRESS -> address.change(
+          )
+        )
+
+        val approvedEvent = address.markAsApproved(createdEvent.aggregateId)
+
+        val current = address.buildCurrentState(createdEvent.aggregateId)
+        addressStore.saveCurrent(createdEvent.aggregateId, current)
+
+        return listOf(createdEvent, approvedEvent)
+      }
+      CHANGE_ADDRESS -> {
+        val changedEvent = address.change(
           command.aggregateId!!,
           ChangeAddress(
             building = command.values["building"].orEmpty(),
             postcode = command.values["postcode"].orEmpty(),
-          ))
-      APPROVE_ADDRESS_CHANGES -> address.markAsApproved(command.aggregateId!!)
+          )
+        )
+
+        val proposed = address.buildProposedState(changedEvent.aggregateId)
+        addressStore.saveProposed(changedEvent.aggregateId, proposed)
+
+        return listOf(changedEvent)
+      }
+      APPROVE_ADDRESS_CHANGES -> {
+        val approvedEvent = address.markAsApproved(command.aggregateId!!)
+
+        val current = address.buildCurrentState(approvedEvent.aggregateId)
+        addressStore.deleteProposed(approvedEvent.aggregateId)
+        addressStore.saveCurrent(approvedEvent.aggregateId, current)
+
+        return listOf(approvedEvent)
+      }
     }
   }
 }

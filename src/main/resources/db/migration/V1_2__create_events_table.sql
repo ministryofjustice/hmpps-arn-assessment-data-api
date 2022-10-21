@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS aggregate(
     aggregate_type    VARCHAR(255)    NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS address (
+CREATE TABLE IF NOT EXISTS address(
     id                SERIAL          PRIMARY KEY,
     uuid              UUID            UNIQUE NOT NULL,
     aggregate_id      UUID            NOT NULL,

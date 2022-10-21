@@ -5,26 +5,25 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Address
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AddressState
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AddressStore
 import java.util.UUID
-
 
 @RestController
 class AddressController(
-  private val address: Address,
+  private val addressStore: AddressStore,
 ) {
-  @RequestMapping(path = ["/address/{uuid}"], method = [RequestMethod.GET])
+  @RequestMapping(path = ["/address/{aggregateId}"], method = [RequestMethod.GET])
   fun getAddress(
-    @Parameter(required = true) @PathVariable uuid: UUID,
-  ): AddressState {
-    return address.find(uuid)
+    @Parameter(required = true) @PathVariable aggregateId: UUID,
+  ): AddressState? {
+    return AddressState.from(addressStore.getCurrent(aggregateId)!!)
   }
 
-  @RequestMapping(path = ["/address/{uuid}/pending"], method = [RequestMethod.GET])
+  @RequestMapping(path = ["/address/{aggregateId}/pending"], method = [RequestMethod.GET])
   fun getPendingChangesForAddress(
-    @Parameter(required = true) @PathVariable uuid: UUID,
+    @Parameter(required = true) @PathVariable aggregateId: UUID,
   ): AddressState {
-    return address.getUnapprovedChanges(uuid)
+    return AddressState.from(addressStore.getProposed(aggregateId)!!)
   }
 }

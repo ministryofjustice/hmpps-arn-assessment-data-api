@@ -7,8 +7,8 @@ import java.util.UUID
 
 @Service
 class AggregateStore(private val aggregateRepository: AggregateRepository) {
-  fun checkAggregateRootExists(uuid: UUID): Boolean {
-    return aggregateRepository.existsByUuid(uuid)
+  fun checkAggregateRootExists(aggregateId: UUID): Boolean {
+    return aggregateRepository.existsByUuid(aggregateId)
   }
 
   fun createAggregateRoot(aggregateType: AggregateType): UUID {
