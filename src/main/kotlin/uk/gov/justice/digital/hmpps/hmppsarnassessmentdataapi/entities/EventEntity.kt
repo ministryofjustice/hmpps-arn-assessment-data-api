@@ -46,6 +46,6 @@ class EventEntity(
   val eventType: EventType,
 
   @Type(type = "json")
-  @Column(columnDefinition = "jsonb", name = "values")
+  @Column(columnDefinition = "jsonb", name = "event_values")
   val values: Map<String, String>
 )

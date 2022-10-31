@@ -25,7 +25,7 @@ data class AddressEntity(
   @Column(name = "aggregate_id")
   val aggregateId: UUID,
 
-  @Column(name = "state")
+  @Column(name = "aggregate_state")
   @Enumerated(EnumType.STRING)
   val state: StateType,
 
