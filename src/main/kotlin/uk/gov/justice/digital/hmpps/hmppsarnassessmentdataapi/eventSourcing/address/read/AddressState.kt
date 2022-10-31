@@ -9,8 +9,8 @@ data class AddressState(
   companion object {
     fun from(addressEntity: AddressEntity): AddressState {
       return AddressState(
-              building = addressEntity.building,
-              postcode = addressEntity.postcode,
+        building = addressEntity.building,
+        postcode = addressEntity.postcode,
       )
     }
   }

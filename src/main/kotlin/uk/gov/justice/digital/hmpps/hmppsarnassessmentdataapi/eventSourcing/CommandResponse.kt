@@ -7,7 +7,7 @@ data class CommandResponse(
   val aggregateId: UUID,
   val eventType: EventType,
   val values: Map<String, String>
-){
+) {
   companion object {
     fun from(event: EventEntity): CommandResponse {
       return CommandResponse(
