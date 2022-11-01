@@ -115,6 +115,7 @@ class Address(val eventRepository: EventRepository, val aggregateStore: Aggregat
         state.postcode = event.values["postcode"].orEmpty()
       }
       CHANGES_APPROVED -> {} // skip events that don't build the aggregate
+      else -> {}
     }
     return state
   }

@@ -4,13 +4,16 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandType.APPROVE_ADDRESS_CHANGES
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandType.CHANGE_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandType.CREATE_ADDRESS
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandType.CREATE_RISK_CALCULATION
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.AddressCommandHandler
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.calculation.CalculationCommandHandler
 import java.util.UUID
 
 enum class CommandType {
   CREATE_ADDRESS,
   CHANGE_ADDRESS,
-  APPROVE_ADDRESS_CHANGES
+  APPROVE_ADDRESS_CHANGES,
+  CREATE_RISK_CALCULATION
 }
 
 data class Command(
@@ -21,7 +24,8 @@ data class Command(
 
 @Service
 class CommandHandler(
-  val addressCommandHandler: AddressCommandHandler
+  val addressCommandHandler: AddressCommandHandler,
+  val calculationCommandHandler: CalculationCommandHandler
 ) {
   fun handleAll(commands: List<Command>): List<List<CommandResponse>> {
     return commands.map { handle(it) }
@@ -37,6 +41,9 @@ class CommandHandler(
       }
       APPROVE_ADDRESS_CHANGES -> {
         addressCommandHandler.approveChanges(command)
+      }
+      CREATE_RISK_CALCULATION -> {
+        calculationCommandHandler.createRiskCalculation(command)
       }
     }
   }
