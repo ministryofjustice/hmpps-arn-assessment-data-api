@@ -3,8 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities
 import java.util.UUID
 import javax.persistence.Column
 import javax.persistence.Entity
-import javax.persistence.EnumType
-import javax.persistence.Enumerated
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType.IDENTITY
 import javax.persistence.Id
