@@ -5,14 +5,14 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Comm
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandResponse
 
 @Service
-class CalculationCommandHandler(val calculationEventService: CalculationEventService) {
+class RiskCalculationCommandHandler(val riskCalculationService: RiskCalculationService) {
   fun createRiskCalculation(command: Command): List<CommandResponse> {
-    val riskScore = calculationEventService.calculateRiskScore(
-      RiskCalculation(
+    val riskScore = riskCalculationService.createRiskCalculation(
+      RiskValues(
         command.values["riskOne"]?.toDoubleOrNull(),
         command.values["riskTwo"]?.toDoubleOrNull()
       )
     )
-    return listOf(riskScore)
+    return listOf(CommandResponse.from(riskScore))
   }
 }

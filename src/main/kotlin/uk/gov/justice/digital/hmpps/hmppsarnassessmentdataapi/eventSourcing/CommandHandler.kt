@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Comm
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandType.CREATE_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandType.CREATE_RISK_CALCULATION
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.AddressCommandHandler
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.calculation.CalculationCommandHandler
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.calculation.RiskCalculationCommandHandler
 import java.util.UUID
 
 enum class CommandType {
@@ -25,7 +25,7 @@ data class Command(
 @Service
 class CommandHandler(
   val addressCommandHandler: AddressCommandHandler,
-  val calculationCommandHandler: CalculationCommandHandler
+  val riskCalculationCommandHandler: RiskCalculationCommandHandler
 ) {
   fun handleAll(commands: List<Command>): List<List<CommandResponse>> {
     return commands.map { handle(it) }
@@ -43,7 +43,7 @@ class CommandHandler(
         addressCommandHandler.approveChanges(command)
       }
       CREATE_RISK_CALCULATION -> {
-        calculationCommandHandler.createRiskCalculation(command)
+        riskCalculationCommandHandler.createRiskCalculation(command)
       }
     }
   }
