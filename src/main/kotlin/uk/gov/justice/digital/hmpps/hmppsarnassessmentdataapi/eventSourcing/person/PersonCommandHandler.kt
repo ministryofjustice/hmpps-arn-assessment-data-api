@@ -3,10 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.per
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Command
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandResponse
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.Address
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.ChangeAddress
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.CreateAddress
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressService
 import java.time.LocalDate
 import java.util.UUID
 
@@ -38,11 +34,10 @@ class PersonCommandHandler(
       )
     )
 
-
     return listOf(updatedEvent)
   }
 
-  fun moveAddress(command: Command) :List<CommandResponse> {
+  fun moveAddress(command: Command): List<CommandResponse> {
     val addressId = command.values["addressId"]
     val addressType = command.values["addressType"]
 

@@ -19,12 +19,14 @@ class PersonQueryService(
   fun getAddressesForPerson(personId: UUID): List<PersonAddressDto> {
     val addresses = personAddressRepository.findByPersonId(personId)
 
-    return addresses.map { PersonAddressDto(
-      it.personId,
-      it.addressId,
-      it.addressType,
-      it.building,
-      it.postcode,
-    ) }
+    return addresses.map {
+      PersonAddressDto(
+        it.personId,
+        it.addressId,
+        it.addressType,
+        it.building,
+        it.postcode,
+      )
+    }
   }
 }
