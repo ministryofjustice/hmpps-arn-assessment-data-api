@@ -30,6 +30,12 @@ enum class AddressType {
   KNOWN_ADDRESS,
 }
 
+data class PersonState(
+  val givenName: String? = null,
+  val familyName: String? = null,
+  val dateOfBirth: LocalDate? = null,
+)
+
 @Service
 class Person(
   val address: Address,
@@ -94,5 +100,26 @@ class Person(
     eventRepository.save(event)
 
     return CommandResponse.from(event)
+  }
+
+  companion object {
+    fun aggregate(events: List<EventEntity>) = events
+      .sortedBy { it.createdOn }
+      .fold(PersonState()) { state: PersonState, event: EventEntity -> applyEvent(state, event) }
+
+    private fun applyEvent(state: PersonState, event: EventEntity): PersonState {
+      return when (event.eventType) {
+        CREATED_PERSON, UPDATED_PERSON_DETAILS -> {
+          val dateOfBirth = event.values["date_of_birth"]
+
+          PersonState(
+            givenName = event.values.getOrDefault("given_name", state.givenName),
+            familyName = event.values.getOrDefault("family_name", state.givenName),
+            dateOfBirth = if (!dateOfBirth.isNullOrBlank()) LocalDate.parse(dateOfBirth) else state.dateOfBirth
+          )
+        }
+        else -> state
+      }
+    }
   }
 }

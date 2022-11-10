@@ -1,32 +1,40 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.repositories.PersonAddressRepository
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.PERSON_MOVED_ADDRESS
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.Address
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressState
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.repositories.ApprovedEventRepository
 import java.util.UUID
-
-data class PersonAddressDto(
-  val personId: UUID,
-  val addressid: UUID,
-  val addressType: AddressType,
-  val building: String,
-  val postcode: String,
-)
 
 @Service
 class PersonQueryService(
-  val personAddressRepository: PersonAddressRepository
+  val approvedEventRepository: ApprovedEventRepository,
 ) {
-  fun getAddressesForPerson(personId: UUID): List<PersonAddressDto> {
-    val addresses = personAddressRepository.findByPersonId(personId)
+  fun getAddressesForPerson(personId: UUID): Map<AddressType, AddressState> {
+    val personEvents = approvedEventRepository.findAllByAggregateIdOrderByCreatedOnAsc(personId)
+    val personAddresses = personEvents
+      .sortedBy { it.createdOn }
+      .filter { it.eventType == PERSON_MOVED_ADDRESS }
+      .groupBy { it.values["addressType"].orEmpty() }
+      .filterKeys { it.isNotBlank() }
+      .mapKeys { (key, _) -> AddressType.valueOf(key) }
+      .mapValues { (_, value) -> value.last().values["addressUuid"].orEmpty() }
+      .filterValues { it.isNotBlank() }
+      .mapValues { (_, value) -> UUID.fromString(value) }
 
-    return addresses.map {
-      PersonAddressDto(
-        it.personId,
-        it.addressId,
-        it.addressType,
-        it.building,
-        it.postcode,
-      )
-    }
+    val addressEvents = approvedEventRepository.findAllByAggregateIdIn(personAddresses.values.toList())
+
+    val addresses = addressEvents
+      .groupBy { it.aggregateId }
+      .mapValues { (_, value) -> Address.aggregate(value) }
+
+    return personAddresses.mapValues { (_, value) -> addresses[value]!! }
+  }
+
+  fun getPerson(personId: UUID): PersonState {
+    val personEvents = approvedEventRepository.findAllByAggregateIdOrderByCreatedOnAsc(personId)
+
+    return Person.aggregate(personEvents)
   }
 }

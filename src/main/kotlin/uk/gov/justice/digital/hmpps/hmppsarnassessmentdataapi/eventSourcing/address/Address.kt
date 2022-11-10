@@ -29,6 +29,20 @@ class Address(val eventRepository: EventRepository, val aggregateStore: Aggregat
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
+
+    fun aggregate(events: List<EventEntity>) = events
+      .sortedBy { it.createdOn }
+      .fold(AddressState()) { state: AddressState, event: EventEntity -> Address.foldfn(state, event) }
+
+    private fun foldfn(state: AddressState, event: EventEntity): AddressState {
+      return when (event.eventType) {
+        CREATED_ADDRESS, CHANGED_ADDRESS -> AddressState(
+          building = event.values.getOrDefault("building", state.building),
+          postcode = event.values.getOrDefault("postcode", state.postcode),
+        )
+        else -> state // skip events that don't build the aggregate
+      }
+    }
   }
 
   fun create(request: CreateAddress): CommandResponse {
