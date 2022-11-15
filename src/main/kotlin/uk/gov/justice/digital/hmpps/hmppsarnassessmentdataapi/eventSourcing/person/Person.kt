@@ -5,25 +5,12 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities.EventEnti
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AggregateStore
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AggregateType.PERSON
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandResponse
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CHANGES_APPROVED
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CREATED_PERSON
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.PERSON_MOVED_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.UPDATED_PERSON_DETAILS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.Address
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.repositories.EventRepository
 import java.time.LocalDate
 import java.util.UUID
-
-data class PersonDetails(
-  val firstName: String,
-  val familyName: String,
-  val dateOfBirth: LocalDate,
-)
-
-data class PersonAddress(
-  val addressId: UUID,
-  val addressType: AddressType,
-)
 
 enum class AddressType {
   PRIMARY_RESIDENCE,
@@ -36,66 +23,84 @@ data class PersonState(
   val dateOfBirth: LocalDate? = null,
 )
 
+data class CreatePersonCommand(
+  val givenName: String,
+  val familyName: String,
+  val dateOfBirth: LocalDate,
+)
+
+data class UpdatePersonCommand(
+  val aggregateId: UUID,
+  val givenName: String,
+  val familyName: String,
+  val dateOfBirth: LocalDate,
+)
+
+data class MovePersonAddressCommand(
+  val aggregateId: UUID,
+  val addressId: UUID,
+  val addressType: AddressType,
+)
+
+data class ApprovePersonChangesCommand(
+  val aggregateId: UUID,
+)
+
 @Service
 class Person(
   val address: Address,
   val eventRepository: EventRepository,
   val aggregateStore: AggregateStore,
 ) {
-  fun create(personDetails: PersonDetails): CommandResponse {
+  fun handle(command: CreatePersonCommand): CommandResponse {
     val aggregateId = aggregateStore.createAggregateRoot(PERSON)
-    val event = EventEntity(
-      aggregateId = aggregateId,
-      eventType = CREATED_PERSON,
-      values = mapOf(
-        "given_name" to personDetails.firstName,
-        "family_name" to personDetails.familyName,
-        "date_of_birth" to personDetails.dateOfBirth.toString(),
+    val event = PersonCreatedEvent(
+      aggregateId,
+      PersonDetailsValues(
+        command.givenName,
+        command.familyName,
+        command.dateOfBirth,
       )
-    )
+    ).toEventEntity()
 
     eventRepository.save(event)
 
     return CommandResponse.from(event)
   }
 
-  fun updateDetails(aggregateId: UUID, personDetails: PersonDetails): CommandResponse {
-    val event = EventEntity(
-      aggregateId = aggregateId,
-      eventType = UPDATED_PERSON_DETAILS,
-      values = mapOf(
-        "given_name" to personDetails.firstName,
-        "family_name" to personDetails.familyName,
-        "date_of_birth" to personDetails.dateOfBirth.toString(),
+  fun handle(command: UpdatePersonCommand): CommandResponse {
+    val event = PersonUpdatedEvent(
+      command.aggregateId,
+      PersonDetailsValues(
+        command.givenName,
+        command.familyName,
+        command.dateOfBirth,
       )
-    )
+    ).toEventEntity()
 
     eventRepository.save(event)
 
     return CommandResponse.from(event)
   }
 
-  fun markAsApproved(aggregateId: UUID): CommandResponse {
-    val event = EventEntity(
-      aggregateId = aggregateId,
-      eventType = CHANGES_APPROVED,
-      values = emptyMap(),
-    )
+  fun handle(command: ApprovePersonChangesCommand): CommandResponse {
+    val event = ApprovedPersonChangesEvent(
+      command.aggregateId,
+    ).toEventEntity()
 
     eventRepository.save(event)
 
     return CommandResponse.from(event)
   }
 
-  fun moveAddress(aggregateId: UUID, personAddress: PersonAddress): CommandResponse {
-    val event = EventEntity(
-      aggregateId = aggregateId,
-      eventType = PERSON_MOVED_ADDRESS,
-      values = mapOf(
-        "addressUuid" to personAddress.addressId.toString(),
-        "addressType" to personAddress.addressType.toString(),
+  fun handle(command: MovePersonAddressCommand): CommandResponse {
+    val event = PersonMovedAddressEvent(
+      command.aggregateId,
+      PersonAddressDetailsValues(
+        command.addressId,
+        command.addressType,
       )
-    )
+    ).toEventEntity()
 
     eventRepository.save(event)
 
@@ -107,15 +112,22 @@ class Person(
       .sortedBy { it.createdOn }
       .fold(PersonState()) { state: PersonState, event: EventEntity -> applyEvent(state, event) }
 
-    private fun applyEvent(state: PersonState, event: EventEntity): PersonState {
-      return when (event.eventType) {
-        CREATED_PERSON, UPDATED_PERSON_DETAILS -> {
-          val dateOfBirth = event.values["date_of_birth"]
-
+    private fun applyEvent(state: PersonState, eventEntity: EventEntity): PersonState {
+      return when (eventEntity.eventType) {
+        CREATED_PERSON -> {
+          val personCreatedEvent = PersonCreatedEvent.fromEventEntity(eventEntity)
           PersonState(
-            givenName = event.values.getOrDefault("given_name", state.givenName),
-            familyName = event.values.getOrDefault("family_name", state.givenName),
-            dateOfBirth = if (!dateOfBirth.isNullOrBlank()) LocalDate.parse(dateOfBirth) else state.dateOfBirth
+            givenName = personCreatedEvent.values.givenName,
+            familyName = personCreatedEvent.values.familyName,
+            dateOfBirth = personCreatedEvent.values.dateOfBirth,
+          )
+        }
+        UPDATED_PERSON_DETAILS -> {
+          val personUpdatedEvent = PersonUpdatedEvent.fromEventEntity(eventEntity)
+          PersonState(
+            givenName = personUpdatedEvent.values.givenName,
+            familyName = personUpdatedEvent.values.familyName,
+            dateOfBirth = personUpdatedEvent.values.dateOfBirth,
           )
         }
         else -> state

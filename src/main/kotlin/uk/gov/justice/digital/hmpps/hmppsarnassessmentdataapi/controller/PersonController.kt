@@ -19,13 +19,13 @@ class PersonController(
   fun getAddressesForPerson(
     @Parameter(required = true) @PathVariable aggregateId: UUID,
   ): Map<AddressType, AddressState> {
-    return personQueryService.getAddressesForPerson(aggregateId)
+    return personQueryService.getApprovedAddresses(aggregateId)
   }
 
   @RequestMapping(path = ["/person/{aggregateId}"], method = [RequestMethod.GET])
   fun getPerson(
     @Parameter(required = true) @PathVariable aggregateId: UUID,
   ): PersonState {
-    return personQueryService.getPerson(aggregateId)
+    return personQueryService.getApprovedPersonDetails(aggregateId)
   }
 }

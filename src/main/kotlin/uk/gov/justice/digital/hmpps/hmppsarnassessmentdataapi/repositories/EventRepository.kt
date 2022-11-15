@@ -8,4 +8,6 @@ import java.util.UUID
 @Repository
 interface EventRepository : JpaRepository<EventEntity, Long> {
   fun findAllByAggregateIdOrderByCreatedOnAsc(aggregateId: UUID): List<EventEntity>
+  fun findAllByAggregateIdIn(aggregateIds: List<UUID>): List<EventEntity>
+  fun findAllByAggregateId(aggregateId: UUID): List<EventEntity>
 }

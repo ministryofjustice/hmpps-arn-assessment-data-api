@@ -11,30 +11,34 @@ class PersonCommandHandler(
   val person: Person,
 ) {
   fun createPerson(command: Command): List<CommandResponse> {
-    val createdEvent = person.create(
-      PersonDetails(
-        firstName = command.values["firstName"].orEmpty(),
+    val createdPersonEvent = person.handle(
+      CreatePersonCommand(
+        givenName = command.values["firstName"].orEmpty(),
         familyName = command.values["familyName"].orEmpty(),
         dateOfBirth = LocalDate.parse(command.values["dateOfBirth"].orEmpty())
       )
     )
 
-    val approvedEvent = person.markAsApproved(createdEvent.aggregateId)
+    val approvedPersonEvent = person.handle(
+      ApprovePersonChangesCommand(
+        createdPersonEvent.aggregateId
+      )
+    )
 
-    return listOf(createdEvent, approvedEvent)
+    return listOf(createdPersonEvent, approvedPersonEvent)
   }
 
   fun updatePersonDetails(command: Command): List<CommandResponse> {
-    val updatedEvent = person.updateDetails(
-      command.aggregateId!!,
-      PersonDetails(
-        firstName = command.values["firstName"].orEmpty(),
+    val updatedPersonEvent = person.handle(
+      UpdatePersonCommand(
+        aggregateId = command.aggregateId!!,
+        givenName = command.values["firstName"].orEmpty(),
         familyName = command.values["familyName"].orEmpty(),
         dateOfBirth = LocalDate.parse(command.values["dateOfBirth"].orEmpty())
       )
     )
 
-    return listOf(updatedEvent)
+    return listOf(updatedPersonEvent)
   }
 
   fun moveAddress(command: Command): List<CommandResponse> {
@@ -42,23 +46,25 @@ class PersonCommandHandler(
     val addressType = command.values["addressType"]
 
     if (command.aggregateId != null && !addressId.isNullOrBlank() && !addressType.isNullOrBlank()) {
-      val movedAddressEvent = person.moveAddress(
-        command.aggregateId,
-        PersonAddress(
+      val personMovedAddressEvent = person.handle(
+        MovePersonAddressCommand(
+          aggregateId = command.aggregateId,
           addressId = UUID.fromString(addressId),
           addressType = AddressType.valueOf(addressType),
         )
       )
 
-      return listOf(movedAddressEvent)
+      return listOf(personMovedAddressEvent)
     }
 
     return emptyList()
   }
 
   fun approveChanges(command: Command): List<CommandResponse> {
-    val approvedEvent = person.markAsApproved(command.aggregateId!!)
+    val approvedPersonChangesEvent = person.handle(
+      ApprovePersonChangesCommand(command.aggregateId!!)
+    )
 
-    return listOf(approvedEvent)
+    return listOf(approvedPersonChangesEvent)
   }
 }

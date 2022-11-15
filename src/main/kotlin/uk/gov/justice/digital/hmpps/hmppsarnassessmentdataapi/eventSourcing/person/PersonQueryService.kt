@@ -1,40 +1,47 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CHANGES_APPROVED
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.PERSON_MOVED_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.Address
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressState
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.repositories.ApprovedEventRepository
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.repositories.EventRepository
 import java.util.UUID
 
 @Service
 class PersonQueryService(
-  val approvedEventRepository: ApprovedEventRepository,
+  val eventRepository: EventRepository,
 ) {
-  fun getAddressesForPerson(personId: UUID): Map<AddressType, AddressState> {
-    val personEvents = approvedEventRepository.findAllByAggregateIdOrderByCreatedOnAsc(personId)
-    val personAddresses = personEvents
-      .sortedBy { it.createdOn }
-      .filter { it.eventType == PERSON_MOVED_ADDRESS }
-      .groupBy { it.values["addressType"].orEmpty() }
-      .filterKeys { it.isNotBlank() }
-      .mapKeys { (key, _) -> AddressType.valueOf(key) }
-      .mapValues { (_, value) -> value.last().values["addressUuid"].orEmpty() }
-      .filterValues { it.isNotBlank() }
-      .mapValues { (_, value) -> UUID.fromString(value) }
+  fun getApprovedAddresses(personId: UUID): Map<AddressType, AddressState> {
+    val personEvents = eventRepository.findAllByAggregateId(personId)
+    val lastApprovedOn = personEvents.findLast { it.eventType == CHANGES_APPROVED }?.createdOn
 
-    val addressEvents = approvedEventRepository.findAllByAggregateIdIn(personAddresses.values.toList())
+    val personAddresses = personEvents
+      .asSequence()
+      .sortedBy { it.createdOn }
+      .filter { it.createdOn < lastApprovedOn && it.eventType == PERSON_MOVED_ADDRESS }
+      .map { PersonMovedAddressEvent.fromEventEntity(it) }
+      .groupBy { it.values.addressType }
+      .mapValues { (_, value) -> value.last().values.addressUUID }
+
+    val addressEvents = eventRepository.findAllByAggregateIdIn(personAddresses.values.toList())
+      .filter { it.createdOn < lastApprovedOn }
 
     val addresses = addressEvents
       .groupBy { it.aggregateId }
-      .mapValues { (_, value) -> Address.aggregate(value) }
+      .mapValues { (_, addressEvents) -> Address.aggregate(addressEvents) }
 
     return personAddresses.mapValues { (_, value) -> addresses[value]!! }
   }
 
-  fun getPerson(personId: UUID): PersonState {
-    val personEvents = approvedEventRepository.findAllByAggregateIdOrderByCreatedOnAsc(personId)
+  fun getApprovedPersonDetails(personId: UUID): PersonState {
+    val personEvents = eventRepository.findAllByAggregateId(personId)
+    val lastApprovedOn = personEvents.findLast { it.eventType == CHANGES_APPROVED }?.createdOn
 
-    return Person.aggregate(personEvents)
+    return Person.aggregate(
+      personEvents
+        .sortedBy { it.createdOn }
+        .filter { it.createdOn < lastApprovedOn }
+    )
   }
 }

@@ -11,23 +11,24 @@ class AddressCommandHandler(
   val addressService: AddressService
 ) {
   fun createAddress(command: Command): List<CommandResponse> {
-    val createdEvent = address.create(
-      CreateAddress(
+    val createdEvent = address.handle(
+      CreateAddressCommand(
+        aggregateId = command.aggregateId!!,
         building = command.values["building"].orEmpty(),
         postcode = command.values["postcode"].orEmpty(),
       )
     )
 
-    val approvedEvent = address.markAsApproved(createdEvent.aggregateId)
+    val approvedEvent = address.handle(ApproveAddressChangesCommand(createdEvent.aggregateId))
     val current = address.buildCurrentState(createdEvent.aggregateId)
     addressService.saveCurrent(createdEvent.aggregateId, current)
     return listOf(createdEvent, approvedEvent)
   }
 
   fun changeAddress(command: Command): List<CommandResponse> {
-    val changedEvent = address.change(
-      command.aggregateId!!,
-      ChangeAddress(
+    val changedEvent = address.handle(
+      ChangeAddressCommand(
+        aggregateId = command.aggregateId!!,
         building = command.values["building"].orEmpty(),
         postcode = command.values["postcode"].orEmpty(),
       )
@@ -39,7 +40,7 @@ class AddressCommandHandler(
   }
 
   fun approveChanges(command: Command): List<CommandResponse> {
-    val approvedEvent = address.markAsApproved(command.aggregateId!!)
+    val approvedEvent = address.handle(ApproveAddressChangesCommand(command.aggregateId!!))
 
     val current = address.buildCurrentState(approvedEvent.aggregateId)
     addressService.deleteProposed(approvedEvent.aggregateId)

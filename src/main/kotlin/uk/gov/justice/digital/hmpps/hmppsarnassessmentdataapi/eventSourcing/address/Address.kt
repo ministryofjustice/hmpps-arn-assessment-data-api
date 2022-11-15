@@ -11,50 +11,40 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Even
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CHANGES_APPROVED
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CREATED_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressState
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.AddressCreatedEvent
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.AddressDetailsValues
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.ApprovedAddressChangesEvent
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.ChangedAddressEvent
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.repositories.EventRepository
 import java.util.UUID
 
-data class CreateAddress(
+data class CreateAddressCommand(
+  val aggregateId: UUID,
   val building: String,
   val postcode: String,
 )
 
-data class ChangeAddress(
+data class ChangeAddressCommand(
+  val aggregateId: UUID,
   val building: String,
   val postcode: String,
+)
+
+data class ApproveAddressChangesCommand(
+  val aggregateId: UUID,
 )
 
 @Service
 class Address(val eventRepository: EventRepository, val aggregateStore: AggregateStore) {
-
-  companion object {
-    val log: Logger = LoggerFactory.getLogger(this::class.java)
-
-    fun aggregate(events: List<EventEntity>) = events
-      .sortedBy { it.createdOn }
-      .fold(AddressState()) { state: AddressState, event: EventEntity -> Address.foldfn(state, event) }
-
-    private fun foldfn(state: AddressState, event: EventEntity): AddressState {
-      return when (event.eventType) {
-        CREATED_ADDRESS, CHANGED_ADDRESS -> AddressState(
-          building = event.values.getOrDefault("building", state.building),
-          postcode = event.values.getOrDefault("postcode", state.postcode),
-        )
-        else -> state // skip events that don't build the aggregate
-      }
-    }
-  }
-
-  fun create(request: CreateAddress): CommandResponse {
+  fun handle(command: CreateAddressCommand): CommandResponse {
     val aggregateId = aggregateStore.createAggregateRoot(ADDRESS)
-    val event = EventEntity(
-      aggregateId = aggregateId,
-      eventType = CREATED_ADDRESS,
-      values = mapOf(
-        "building" to request.building,
-        "postcode" to request.postcode,
-      ),
-    )
+    val event = AddressCreatedEvent(
+      aggregateId,
+      AddressDetailsValues(
+        command.building,
+        command.postcode,
+      )
+    ).toEventEntity()
 
     eventRepository.save(event)
 
@@ -63,39 +53,36 @@ class Address(val eventRepository: EventRepository, val aggregateStore: Aggregat
     return CommandResponse.from(event)
   }
 
-  fun change(aggregateId: UUID, request: ChangeAddress): CommandResponse {
-    val addressExists = aggregateStore.checkAggregateRootExists(aggregateId)
+  fun handle(command: ChangeAddressCommand): CommandResponse {
+    val addressExists = aggregateStore.checkAggregateRootExists(command.aggregateId)
 
-    val event = EventEntity(
-      aggregateId = aggregateId,
-      eventType = CHANGED_ADDRESS,
-      values = mapOf(
-        "building" to request.building,
-        "postcode" to request.postcode,
-      ),
-    )
+    val event = ChangedAddressEvent(
+      command.aggregateId,
+      AddressDetailsValues(
+        command.building,
+        command.postcode,
+      )
+    ).toEventEntity()
 
     // can we make this smarter? like a diff?
     if (addressExists) {
       eventRepository.save(event)
-      log.info("Changed address: $aggregateId")
+      log.info("Changed address: $command.aggregateId")
     }
 
     return CommandResponse.from(event)
   }
 
-  fun markAsApproved(aggregateId: UUID): CommandResponse {
-    val addressExists = aggregateStore.checkAggregateRootExists(aggregateId)
-    val event = EventEntity(
-      aggregateId = aggregateId,
-      eventType = CHANGES_APPROVED,
-      values = emptyMap(),
-    )
+  fun handle(command: ApproveAddressChangesCommand): CommandResponse {
+    val addressExists = aggregateStore.checkAggregateRootExists(command.aggregateId)
+    val event = ApprovedAddressChangesEvent(
+      command.aggregateId,
+    ).toEventEntity()
 
     if (addressExists) {
       eventRepository.save(event)
 
-      log.info("Approved changes for address: $aggregateId")
+      log.info("Approved changes for address: $command.aggregateId")
     }
 
     return CommandResponse.from(event)
@@ -118,15 +105,47 @@ class Address(val eventRepository: EventRepository, val aggregateStore: Aggregat
       .fold(AddressState()) { state, event -> applyEvent(state, event) }
   }
 
-  private fun applyEvent(state: AddressState, event: EventEntity): AddressState {
-    when (event.eventType) {
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+
+    fun aggregate(events: List<EventEntity>) = events
+      .sortedBy { it.createdOn }
+      .fold(AddressState()) { state: AddressState, event: EventEntity -> Address.folder(state, event) }
+
+    private fun folder(state: AddressState, eventEntity: EventEntity): AddressState {
+      return when (eventEntity.eventType) {
+        CREATED_ADDRESS -> {
+          val event = AddressCreatedEvent.fromEventEntity(eventEntity)
+
+          AddressState(
+            building = event.values.building,
+            postcode = event.values.postcode,
+          )
+        }
+        CHANGED_ADDRESS -> {
+          val event = ChangedAddressEvent.fromEventEntity(eventEntity)
+
+          AddressState(
+            building = event.values.building,
+            postcode = event.values.postcode,
+          )
+        }
+        else -> state // skip events that don't build the aggregate
+      }
+    }
+  }
+
+  private fun applyEvent(state: AddressState, eventEntity: EventEntity): AddressState {
+    when (eventEntity.eventType) {
       CREATED_ADDRESS -> {
-        state.building = event.values["building"].orEmpty()
-        state.postcode = event.values["postcode"].orEmpty()
+        val event = AddressCreatedEvent.fromEventEntity(eventEntity)
+        state.building = event.values.building
+        state.postcode = event.values.postcode
       }
       CHANGED_ADDRESS -> {
-        state.building = event.values["building"].orEmpty()
-        state.postcode = event.values["postcode"].orEmpty()
+        val event = ChangedAddressEvent.fromEventEntity(eventEntity)
+        state.building = event.values.building
+        state.postcode = event.values.postcode
       }
       else -> {} // skip events that don't build the aggregate
     }

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing
 
+import com.beust.klaxon.Klaxon
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities.EventEntity
 import java.util.UUID
 
@@ -13,7 +14,7 @@ data class CommandResponse(
       return CommandResponse(
         event.aggregateId,
         event.eventType,
-        event.values,
+        Klaxon().parse(event.values)!!,
       )
     }
   }
