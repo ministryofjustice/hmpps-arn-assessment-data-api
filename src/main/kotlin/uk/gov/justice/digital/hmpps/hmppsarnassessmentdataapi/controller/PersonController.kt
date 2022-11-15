@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressState
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.AddressType
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.PersonQueryService
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.PersonState
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.read.PersonQueryService
 import java.util.UUID
 
 @RestController
@@ -26,6 +26,6 @@ class PersonController(
   fun getPerson(
     @Parameter(required = true) @PathVariable aggregateId: UUID,
   ): PersonState {
-    return personQueryService.getApprovedPersonDetails(aggregateId)
+    return personQueryService.getPerson(aggregateId)
   }
 }

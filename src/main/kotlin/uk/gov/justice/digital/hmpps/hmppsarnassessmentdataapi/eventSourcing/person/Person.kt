@@ -112,24 +112,22 @@ class Person(
       .sortedBy { it.createdOn }
       .fold(PersonState()) { state: PersonState, event: EventEntity -> applyEvent(state, event) }
 
+    private fun apply(state: PersonState, event: PersonCreatedEvent) = PersonState(
+      givenName = event.values.givenName,
+      familyName = event.values.familyName,
+      dateOfBirth = event.values.dateOfBirth,
+    )
+
+    private fun apply(state: PersonState, event: PersonUpdatedEvent) = PersonState(
+      givenName = event.values.givenName,
+      familyName = event.values.familyName,
+      dateOfBirth = event.values.dateOfBirth,
+    )
+
     private fun applyEvent(state: PersonState, eventEntity: EventEntity): PersonState {
       return when (eventEntity.eventType) {
-        CREATED_PERSON -> {
-          val personCreatedEvent = PersonCreatedEvent.fromEventEntity(eventEntity)
-          PersonState(
-            givenName = personCreatedEvent.values.givenName,
-            familyName = personCreatedEvent.values.familyName,
-            dateOfBirth = personCreatedEvent.values.dateOfBirth,
-          )
-        }
-        UPDATED_PERSON_DETAILS -> {
-          val personUpdatedEvent = PersonUpdatedEvent.fromEventEntity(eventEntity)
-          PersonState(
-            givenName = personUpdatedEvent.values.givenName,
-            familyName = personUpdatedEvent.values.familyName,
-            dateOfBirth = personUpdatedEvent.values.dateOfBirth,
-          )
-        }
+        CREATED_PERSON -> apply(state, PersonCreatedEvent.fromEventEntity(eventEntity))
+        UPDATED_PERSON_DETAILS -> apply(state, PersonUpdatedEvent.fromEventEntity(eventEntity))
         else -> state
       }
     }

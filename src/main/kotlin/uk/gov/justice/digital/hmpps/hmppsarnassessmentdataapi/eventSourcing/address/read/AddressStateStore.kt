@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.repositories.Addre
 import java.util.UUID
 
 @Service
-class AddressService(val addressRepository: AddressRepository) {
+class AddressStateStore(val addressRepository: AddressRepository) {
   fun saveCurrent(aggregateId: UUID, addressState: AddressState) {
     save(aggregateId, addressState, CURRENT)
   }

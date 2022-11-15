@@ -1,10 +1,14 @@
-package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person
+package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.read
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CHANGES_APPROVED
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.PERSON_MOVED_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.Address
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressState
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.AddressType
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.Person
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.PersonMovedAddressEvent
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.PersonState
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.repositories.EventRepository
 import java.util.UUID
 
@@ -34,7 +38,7 @@ class PersonQueryService(
     return personAddresses.mapValues { (_, value) -> addresses[value]!! }
   }
 
-  fun getApprovedPersonDetails(personId: UUID): PersonState {
+  fun getPerson(personId: UUID): PersonState {
     val personEvents = eventRepository.findAllByAggregateId(personId)
     val lastApprovedOn = personEvents.findLast { it.eventType == CHANGES_APPROVED }?.createdOn
 

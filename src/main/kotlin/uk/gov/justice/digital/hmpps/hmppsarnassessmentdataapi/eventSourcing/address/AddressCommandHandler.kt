@@ -3,12 +3,14 @@ package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.add
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Command
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandResponse
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressService
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressQueryService
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressStateStore
 
 @Service
 class AddressCommandHandler(
   val address: Address,
-  val addressService: AddressService
+  val addressStateStore: AddressStateStore,
+  val addressQueryService: AddressQueryService,
 ) {
   fun createAddress(command: Command): List<CommandResponse> {
     val createdEvent = address.handle(
@@ -20,8 +22,8 @@ class AddressCommandHandler(
     )
 
     val approvedEvent = address.handle(ApproveAddressChangesCommand(createdEvent.aggregateId))
-    val current = address.buildCurrentState(createdEvent.aggregateId)
-    addressService.saveCurrent(createdEvent.aggregateId, current)
+    val current = addressQueryService.getApprovedAddress(createdEvent.aggregateId)
+    addressStateStore.saveCurrent(createdEvent.aggregateId, current)
     return listOf(createdEvent, approvedEvent)
   }
 
@@ -34,17 +36,17 @@ class AddressCommandHandler(
       )
     )
 
-    val proposed = address.buildProposedState(changedEvent.aggregateId)
-    addressService.saveProposed(changedEvent.aggregateId, proposed)
+    val proposed = addressQueryService.getProposedChanges(changedEvent.aggregateId)
+    addressStateStore.saveProposed(changedEvent.aggregateId, proposed)
     return listOf(changedEvent)
   }
 
   fun approveChanges(command: Command): List<CommandResponse> {
     val approvedEvent = address.handle(ApproveAddressChangesCommand(command.aggregateId!!))
 
-    val current = address.buildCurrentState(approvedEvent.aggregateId)
-    addressService.deleteProposed(approvedEvent.aggregateId)
-    addressService.saveCurrent(approvedEvent.aggregateId, current)
+    val current = addressQueryService.getApprovedAddress(approvedEvent.aggregateId)
+    addressStateStore.deleteProposed(approvedEvent.aggregateId)
+    addressStateStore.saveCurrent(approvedEvent.aggregateId, current)
 
     return listOf(approvedEvent)
   }
