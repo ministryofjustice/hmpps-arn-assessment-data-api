@@ -91,13 +91,13 @@ class Address(val eventRepository: EventRepository, val aggregateStore: Aggregat
       .fold(AddressState()) { state: AddressState, event: EventEntity -> applyEvent(state, event) }
 
     private fun apply(state: AddressState, event: AddressCreatedEvent) = AddressState(
-      building = event.values.building,
-      postcode = event.values.postcode,
+      building = event.values.building ?: state.building,
+      postcode = event.values.postcode ?: state.postcode,
     )
 
     private fun apply(state: AddressState, event: ChangedAddressEvent) = AddressState(
-      building = event.values.building,
-      postcode = event.values.postcode,
+      building = event.values.building ?: state.building,
+      postcode = event.values.postcode ?: state.postcode,
     )
 
     private fun applyEvent(state: AddressState, eventEntity: EventEntity): AddressState {

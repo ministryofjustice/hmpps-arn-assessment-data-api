@@ -113,15 +113,15 @@ class Person(
       .fold(PersonState()) { state: PersonState, event: EventEntity -> applyEvent(state, event) }
 
     private fun apply(state: PersonState, event: PersonCreatedEvent) = PersonState(
-      givenName = event.values.givenName,
-      familyName = event.values.familyName,
-      dateOfBirth = event.values.dateOfBirth,
+      givenName = event.values.givenName ?: state.givenName,
+      familyName = event.values.familyName ?: state.familyName,
+      dateOfBirth = event.values.dateOfBirth ?: state.dateOfBirth,
     )
 
     private fun apply(state: PersonState, event: PersonUpdatedEvent) = PersonState(
-      givenName = event.values.givenName,
-      familyName = event.values.familyName,
-      dateOfBirth = event.values.dateOfBirth,
+      givenName = event.values.givenName ?: state.givenName,
+      familyName = event.values.familyName ?: state.familyName,
+      dateOfBirth = event.values.dateOfBirth ?: state.dateOfBirth,
     )
 
     private fun applyEvent(state: PersonState, eventEntity: EventEntity): PersonState {

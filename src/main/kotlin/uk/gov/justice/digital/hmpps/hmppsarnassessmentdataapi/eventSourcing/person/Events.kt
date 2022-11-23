@@ -14,10 +14,10 @@ import java.time.LocalDate
 import java.util.UUID
 
 data class PersonDetailsValues(
-  val givenName: String,
-  val familyName: String,
+  val givenName: String? = null,
+  val familyName: String? = null,
   @KlaxonDate
-  val dateOfBirth: LocalDate,
+  val dateOfBirth: LocalDate? = null,
 )
 
 data class PersonAddressDetailsValues(

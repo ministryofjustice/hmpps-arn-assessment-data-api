@@ -9,8 +9,8 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.util
 import java.util.UUID
 
 data class AddressDetailsValues(
-  val building: String,
-  val postcode: String,
+  val building: String?,
+  val postcode: String?,
 )
 
 class AddressCreatedEvent(
