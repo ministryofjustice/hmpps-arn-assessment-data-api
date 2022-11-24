@@ -14,7 +14,7 @@ data class CommandResponse(
       return CommandResponse(
         event.aggregateId,
         event.eventType,
-        Klaxon().parse(event.values)!!,
+        Klaxon().parse(event.event)!!,
       )
     }
   }

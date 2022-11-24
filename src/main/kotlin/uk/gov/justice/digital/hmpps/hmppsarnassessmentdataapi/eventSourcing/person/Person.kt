@@ -5,12 +5,14 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities.EventEnti
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AggregateStore
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AggregateType.PERSON
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandResponse
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Event
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CHANGES_APPROVED
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CREATED_PERSON
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.PERSON_MOVED_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.UPDATED_PERSON_DETAILS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.Address
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.repositories.EventRepository
 import java.time.LocalDate
-import java.util.UUID
 
 enum class AddressType {
   PRIMARY_RESIDENCE,
@@ -23,29 +25,6 @@ data class PersonState(
   val dateOfBirth: LocalDate? = null,
 )
 
-data class CreatePersonCommand(
-  val givenName: String,
-  val familyName: String,
-  val dateOfBirth: LocalDate,
-)
-
-data class UpdatePersonCommand(
-  val aggregateId: UUID,
-  val givenName: String,
-  val familyName: String,
-  val dateOfBirth: LocalDate,
-)
-
-data class MovePersonAddressCommand(
-  val aggregateId: UUID,
-  val addressId: UUID,
-  val addressType: AddressType,
-)
-
-data class ApprovePersonChangesCommand(
-  val aggregateId: UUID,
-)
-
 @Service
 class Person(
   val address: Address,
@@ -54,14 +33,15 @@ class Person(
 ) {
   fun handle(command: CreatePersonCommand): CommandResponse {
     val aggregateId = aggregateStore.createAggregateRoot(PERSON)
-    val event = PersonCreatedEvent(
-      aggregateId,
-      PersonDetailsValues(
-        command.givenName,
-        command.familyName,
-        command.dateOfBirth,
+    val event = EventEntity.from(
+      aggregateId = aggregateId,
+      eventType = CREATED_PERSON,
+      values = CreatedPersonEvent(
+        givenName = command.givenName,
+        familyName = command.familyName,
+        dateOfBirth = command.dateOfBirth,
       )
-    ).toEventEntity()
+    )
 
     eventRepository.save(event)
 
@@ -69,14 +49,15 @@ class Person(
   }
 
   fun handle(command: UpdatePersonCommand): CommandResponse {
-    val event = PersonUpdatedEvent(
-      command.aggregateId,
-      PersonDetailsValues(
-        command.givenName,
-        command.familyName,
-        command.dateOfBirth,
+    val event = EventEntity.from(
+      aggregateId = command.aggregateId,
+      eventType = UPDATED_PERSON_DETAILS,
+      values = PersonUpdatedDetailsEvent(
+        givenName = command.givenName,
+        familyName = command.familyName,
+        dateOfBirth = command.dateOfBirth,
       )
-    ).toEventEntity()
+    )
 
     eventRepository.save(event)
 
@@ -84,9 +65,10 @@ class Person(
   }
 
   fun handle(command: ApprovePersonChangesCommand): CommandResponse {
-    val event = ApprovedPersonChangesEvent(
-      command.aggregateId,
-    ).toEventEntity()
+    val event = EventEntity.from(
+      aggregateId = command.aggregateId,
+      eventType = CHANGES_APPROVED,
+    )
 
     eventRepository.save(event)
 
@@ -94,13 +76,14 @@ class Person(
   }
 
   fun handle(command: MovePersonAddressCommand): CommandResponse {
-    val event = PersonMovedAddressEvent(
-      command.aggregateId,
-      PersonAddressDetailsValues(
-        command.addressId,
-        command.addressType,
+    val event = EventEntity.from(
+      aggregateId = command.aggregateId,
+      eventType = PERSON_MOVED_ADDRESS,
+      values = PersonMovedAddressEvent(
+        addressUUID = command.addressId,
+        addressType = command.addressType,
       )
-    ).toEventEntity()
+    )
 
     eventRepository.save(event)
 
@@ -112,22 +95,22 @@ class Person(
       .sortedBy { it.createdOn }
       .fold(PersonState()) { state: PersonState, event: EventEntity -> applyEvent(state, event) }
 
-    private fun apply(state: PersonState, event: PersonCreatedEvent) = PersonState(
-      givenName = event.values.givenName ?: state.givenName,
-      familyName = event.values.familyName ?: state.familyName,
-      dateOfBirth = event.values.dateOfBirth ?: state.dateOfBirth,
+    private fun apply(state: PersonState, event: CreatedPersonEvent) = PersonState(
+      givenName = event.givenName ?: state.givenName,
+      familyName = event.familyName ?: state.familyName,
+      dateOfBirth = event.dateOfBirth ?: state.dateOfBirth,
     )
 
-    private fun apply(state: PersonState, event: PersonUpdatedEvent) = PersonState(
-      givenName = event.values.givenName ?: state.givenName,
-      familyName = event.values.familyName ?: state.familyName,
-      dateOfBirth = event.values.dateOfBirth ?: state.dateOfBirth,
+    private fun apply(state: PersonState, event: PersonUpdatedDetailsEvent) = PersonState(
+      givenName = event.givenName ?: state.givenName,
+      familyName = event.familyName ?: state.familyName,
+      dateOfBirth = event.dateOfBirth ?: state.dateOfBirth,
     )
 
-    private fun applyEvent(state: PersonState, eventEntity: EventEntity): PersonState {
-      return when (eventEntity.eventType) {
-        CREATED_PERSON -> apply(state, PersonCreatedEvent.fromEventEntity(eventEntity))
-        UPDATED_PERSON_DETAILS -> apply(state, PersonUpdatedEvent.fromEventEntity(eventEntity))
+    private fun applyEvent(state: PersonState, event: EventEntity): PersonState {
+      return when (event.eventType) {
+        CREATED_PERSON -> apply(state, event.into<CreatedPersonEvent>())
+        UPDATED_PERSON_DETAILS -> apply(state, event.into<PersonUpdatedDetailsEvent>())
         else -> state
       }
     }

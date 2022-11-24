@@ -1,22 +1,14 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing
 
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities.EventEntity
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.utils.JsonEventValues
+import java.time.LocalDateTime
 import java.util.UUID
 
-abstract class Event(
-  open val aggregateId: UUID,
-  open val values: Any,
-) {
-  abstract fun getType(): EventType
-
-  fun toEventEntity(): EventEntity {
-    val serializedValues = JsonEventValues.serialize(values)
-
-    return EventEntity(
-      aggregateId = aggregateId,
-      eventType = getType(),
-      values = serializedValues,
-    )
-  }
-}
+class Event<T : Any>(
+  val id: Long? = null,
+  val uuid: UUID = UUID.randomUUID(),
+  val createdOn: LocalDateTime = LocalDateTime.now(),
+  val createdBy: String = "Unknown",
+  val aggregateId: UUID,
+  val eventType: EventType,
+  val values: T,
+)

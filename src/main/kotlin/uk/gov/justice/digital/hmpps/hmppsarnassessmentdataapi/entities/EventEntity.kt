@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities
 
+import com.beust.klaxon.Klaxon
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType
 import com.vladmihalcea.hibernate.type.json.JsonStringType
 import org.hibernate.annotations.Type
@@ -47,5 +48,19 @@ class EventEntity(
 
   @Type(type = "json")
   @Column(columnDefinition = "jsonb", name = "event_values")
-  val values: String
-)
+  val event: String
+) {
+  final inline fun <reified T : Any> into(): T {
+    return Klaxon().parse<T>(event)!!
+  }
+
+  companion object {
+    fun from(aggregateId: UUID, eventType: EventType, values: Any = emptyMap<String, String>()): EventEntity {
+      return EventEntity(
+        aggregateId = aggregateId,
+        eventType = eventType,
+        event = Klaxon().toJsonString(values),
+      )
+    }
+  }
+}
