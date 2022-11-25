@@ -1,12 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities
 
-import com.beust.klaxon.Klaxon
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType
 import com.vladmihalcea.hibernate.type.json.JsonStringType
 import org.hibernate.annotations.Type
 import org.hibernate.annotations.TypeDef
 import org.hibernate.annotations.TypeDefs
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.utils.JsonEventValues
 import java.time.LocalDateTime
 import java.util.UUID
 import javax.persistence.Column
@@ -48,10 +48,10 @@ class EventEntity(
 
   @Type(type = "json")
   @Column(columnDefinition = "jsonb", name = "event_values")
-  val event: String
+  val event_values: String
 ) {
   final inline fun <reified T : Any> into(): T {
-    return Klaxon().parse<T>(event)!!
+    return JsonEventValues.deserialize(event_values)!!
   }
 
   companion object {
@@ -59,7 +59,7 @@ class EventEntity(
       return EventEntity(
         aggregateId = aggregateId,
         eventType = eventType,
-        event = Klaxon().toJsonString(values),
+        event_values = JsonEventValues.serialize(values),
       )
     }
   }

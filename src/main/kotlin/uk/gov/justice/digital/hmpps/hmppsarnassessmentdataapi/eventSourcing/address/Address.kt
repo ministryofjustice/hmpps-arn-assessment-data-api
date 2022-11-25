@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities.EventEnti
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AggregateStore
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AggregateType.ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandResponse
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Event
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CHANGED_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CHANGES_APPROVED
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CREATED_ADDRESS
@@ -19,7 +18,7 @@ class Address(val eventRepository: EventRepository, val aggregateStore: Aggregat
   fun handle(command: CreateAddressCommand): CommandResponse {
     val aggregateId = aggregateStore.createAggregateRoot(ADDRESS)
     val event = EventEntity.from(
-      aggregateId = command.aggregateId,
+      aggregateId = aggregateId,
       eventType = CREATED_ADDRESS,
       values = AddressCreatedEvent(
         building = command.building,

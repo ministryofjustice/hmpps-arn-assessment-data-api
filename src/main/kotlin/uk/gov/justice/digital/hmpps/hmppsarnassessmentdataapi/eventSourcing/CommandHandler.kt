@@ -9,8 +9,15 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Comm
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandType.MOVE_PERSONS_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandType.UPDATE_PERSON_DETAILS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.AddressCommandHandler
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.ApproveAddressChangesCommand
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.ChangeAddressCommand
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.CreateAddressCommand
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.ApprovePersonChangesCommand
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.CreatePersonCommand
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.MovePersonAddressCommand
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.PersonCommandHandler
-import java.util.UUID
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.UpdatePersonCommand
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.utils.JsonEventValues
 
 enum class CommandType {
   CREATE_ADDRESS,
@@ -22,30 +29,33 @@ enum class CommandType {
   APPROVE_PERSON_CHANGES,
 }
 
-data class Command(
+data class CommandRequest(
   val type: CommandType,
-  val aggregateId: UUID? = null,
   val values: Map<String, String>,
-)
+) {
+  inline fun <reified T> into(): T {
+    return JsonEventValues.deserialize(JsonEventValues.serialize(values))!!
+  }
+}
 
 @Service
 class CommandHandler(
   val addressCommandHandler: AddressCommandHandler,
   val personCommandHandler: PersonCommandHandler,
 ) {
-  fun handleAll(commands: List<Command>): List<List<CommandResponse>> {
-    return commands.map { handle(it) }
+  fun handleAll(commands: List<CommandRequest>): List<CommandResponse> {
+    return commands.map { handle(it) }.flatten()
   }
 
-  fun handle(command: Command): List<CommandResponse> {
+  fun handle(command: CommandRequest): List<CommandResponse> {
     return when (command.type) {
-      CREATE_ADDRESS -> addressCommandHandler.createAddress(command)
-      CHANGE_ADDRESS -> addressCommandHandler.changeAddress(command)
-      APPROVE_ADDRESS_CHANGES -> addressCommandHandler.approveChanges(command)
-      CREATE_PERSON -> personCommandHandler.createPerson(command)
-      UPDATE_PERSON_DETAILS -> personCommandHandler.updatePersonDetails(command)
-      MOVE_PERSONS_ADDRESS -> personCommandHandler.moveAddress(command)
-      APPROVE_PERSON_CHANGES -> personCommandHandler.approveChanges(command)
+      CREATE_ADDRESS -> addressCommandHandler.handle(command.into<CreateAddressCommand>())
+      CHANGE_ADDRESS -> addressCommandHandler.handle(command.into<ChangeAddressCommand>())
+      APPROVE_ADDRESS_CHANGES -> addressCommandHandler.handle(command.into<ApproveAddressChangesCommand>())
+      CREATE_PERSON -> personCommandHandler.handle(command.into<CreatePersonCommand>())
+      UPDATE_PERSON_DETAILS -> personCommandHandler.handle(command.into<UpdatePersonCommand>())
+      MOVE_PERSONS_ADDRESS -> personCommandHandler.handle(command.into<MovePersonAddressCommand>())
+      APPROVE_PERSON_CHANGES -> personCommandHandler.handle(command.into<ApprovePersonChangesCommand>())
     }
   }
 }
