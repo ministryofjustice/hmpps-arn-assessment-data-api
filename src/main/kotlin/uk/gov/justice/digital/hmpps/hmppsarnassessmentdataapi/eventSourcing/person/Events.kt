@@ -6,14 +6,9 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.util
 import java.time.LocalDate
 import java.util.UUID
 
-data class CreatedPersonEvent(
-  val givenName: String? = null,
-  val familyName: String? = null,
-  @KlaxonDate
-  val dateOfBirth: LocalDate? = null,
-)
+class CreatedPersonEvent
 
-data class PersonUpdatedDetailsEvent(
+data class PersonDetailsUpdatedEvent(
   val givenName: String? = null,
   val familyName: String? = null,
   @KlaxonDate
@@ -25,4 +20,8 @@ data class PersonMovedAddressEvent(
   val addressUUID: UUID,
   @KlaxonAddressType
   val addressType: AddressType,
+)
+
+data class ApprovedPersonChangesEvent(
+  val approvedBy: String = "Unknown",
 )

@@ -5,14 +5,28 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.util
 import java.time.LocalDate
 import java.util.UUID
 
-data class CreatePersonCommand(
+data class CreateNewPersonCommand(
   val givenName: String,
   val familyName: String,
   @KlaxonDate
   val dateOfBirth: LocalDate,
 )
 
-data class UpdatePersonCommand(
+data class ProposeUpdatePersonDetailsCommand(
+  @KlaxonUuid
+  val aggregateId: UUID,
+  val givenName: String,
+  val familyName: String,
+  @KlaxonDate
+  val dateOfBirth: LocalDate,
+)
+
+class ApproveUpdatePersonDetailsCommand(
+  @KlaxonUuid
+  val commandUUID: UUID,
+)
+
+data class UpdatePersonDetailsCommand(
   @KlaxonUuid
   val aggregateId: UUID,
   val givenName: String,
@@ -26,9 +40,4 @@ data class MovePersonAddressCommand(
   val aggregateId: UUID,
   val addressId: UUID,
   val addressType: AddressType,
-)
-
-class ApprovePersonChangesCommand(
-  @KlaxonUuid
-  val commandUUID: UUID,
 )

@@ -25,6 +25,13 @@ class CommandController(
     return commandHandler.handleAll(commands)
   }
 
+  @RequestMapping(path = ["/command/{commandId}/pending"], method = [RequestMethod.DELETE])
+  fun removeCommand(
+    @Parameter(required = true) @PathVariable commandId: UUID,
+  ) {
+    return commandStore.removeCommand(commandId)
+  }
+
   @RequestMapping(path = ["/command/{aggregateId}/pending"], method = [RequestMethod.GET])
   fun getPendingCommands(
     @Parameter(required = true) @PathVariable aggregateId: UUID,

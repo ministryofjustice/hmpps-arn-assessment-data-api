@@ -3,19 +3,26 @@ package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.add
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.utils.KlaxonUuid
 import java.util.UUID
 
-data class CreateAddressCommand(
+data class CreateNewAddressCommand(
   val building: String,
   val postcode: String,
 )
 
-data class ChangeAddressCommand(
+data class ProposeUpdateAddressDetailsCommand(
   @KlaxonUuid
   val aggregateId: UUID,
   val building: String,
   val postcode: String,
 )
 
-class ApproveAddressChangesCommand(
+data class UpdateAddressDetailsCommand(
+  @KlaxonUuid
+  val aggregateId: UUID,
+  val building: String,
+  val postcode: String,
+)
+
+class ApproveUpdateAddressDetailsCommand(
   @KlaxonUuid
   val commandUUID: UUID,
 )

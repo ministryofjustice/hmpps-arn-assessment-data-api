@@ -1,11 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address
 
-data class AddressCreatedEvent(
+class AddressCreatedEvent
+
+data class AddressDetailsUpdatedEvent(
   val building: String?,
   val postcode: String?,
 )
 
-data class AddressUpdatedEvent(
-  val building: String?,
-  val postcode: String?,
+data class ApprovedAddressChangesEvent(
+  val approvedBy: String = "Unknown",
 )
