@@ -30,5 +30,5 @@ data class MovePersonAddressCommand(
 
 class ApprovePersonChangesCommand(
   @KlaxonUuid
-  val aggregateId: UUID,
+  val commandUUID: UUID,
 )

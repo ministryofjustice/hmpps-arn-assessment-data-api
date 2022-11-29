@@ -5,7 +5,6 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities.EventEnti
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AggregateStore
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AggregateType.PERSON
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandResponse
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CHANGES_APPROVED
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CREATED_PERSON
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.PERSON_MOVED_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.UPDATED_PERSON_DETAILS
@@ -56,17 +55,6 @@ class Person(
         familyName = command.familyName,
         dateOfBirth = command.dateOfBirth,
       )
-    )
-
-    eventRepository.save(event)
-
-    return CommandResponse.from(event)
-  }
-
-  fun handle(command: ApprovePersonChangesCommand): CommandResponse {
-    val event = EventEntity.from(
-      aggregateId = command.aggregateId,
-      eventType = CHANGES_APPROVED,
     )
 
     eventRepository.save(event)

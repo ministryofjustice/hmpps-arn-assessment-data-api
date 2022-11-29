@@ -9,9 +9,8 @@ class PersonCommandHandler(
 ) {
   fun handle(command: CreatePersonCommand): List<CommandResponse> {
     val createdPersonEvent = person.handle(command)
-    val approvedPersonEvent = person.handle(ApprovePersonChangesCommand(createdPersonEvent.aggregateId))
 
-    return listOf(createdPersonEvent, approvedPersonEvent)
+    return listOf(createdPersonEvent)
   }
 
   fun handle(command: UpdatePersonCommand): List<CommandResponse> {
@@ -24,11 +23,5 @@ class PersonCommandHandler(
     val personMovedAddressEvent = person.handle(command)
 
     return listOf(personMovedAddressEvent)
-  }
-
-  fun handle(command: ApprovePersonChangesCommand): List<CommandResponse> {
-    val approvedPersonChangesEvent = person.handle(command)
-
-    return listOf(approvedPersonChangesEvent)
   }
 }

@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Aggr
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AggregateType.ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandResponse
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CHANGED_ADDRESS
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CHANGES_APPROVED
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CREATED_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressState
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.repositories.EventRepository
@@ -49,22 +48,6 @@ class Address(val eventRepository: EventRepository, val aggregateStore: Aggregat
     if (addressExists) {
       eventRepository.save(event)
       log.info("Changed address: $command.aggregateId")
-    }
-
-    return CommandResponse.from(event)
-  }
-
-  fun handle(command: ApproveAddressChangesCommand): CommandResponse {
-    val addressExists = aggregateStore.checkAggregateRootExists(command.aggregateId)
-    val event = EventEntity.from(
-      aggregateId = command.aggregateId,
-      eventType = CHANGES_APPROVED,
-    )
-
-    if (addressExists) {
-      eventRepository.save(event)
-
-      log.info("Approved changes for address: $command.aggregateId")
     }
 
     return CommandResponse.from(event)
