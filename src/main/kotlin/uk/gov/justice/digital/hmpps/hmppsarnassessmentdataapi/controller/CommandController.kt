@@ -8,9 +8,7 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandHandler
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandRequest
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandResponse
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandStore
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.PendingCommandResponse
 import java.util.UUID
 
 @RestController
@@ -21,21 +19,15 @@ class CommandController(
   @RequestMapping(path = ["/command"], method = [RequestMethod.POST])
   fun executeCommands(
     @RequestBody commands: List<CommandRequest>,
-  ): List<CommandResponse> {
-    return commandHandler.handleAll(commands)
-  }
+  ) = commandHandler.handleAll(commands)
 
   @RequestMapping(path = ["/command/{commandId}/pending"], method = [RequestMethod.DELETE])
   fun removeCommand(
     @Parameter(required = true) @PathVariable commandId: UUID,
-  ) {
-    return commandStore.removeCommand(commandId)
-  }
+  ) = commandStore.removeCommand(commandId)
 
   @RequestMapping(path = ["/command/{aggregateId}/pending"], method = [RequestMethod.GET])
   fun getPendingCommands(
     @Parameter(required = true) @PathVariable aggregateId: UUID,
-  ): List<PendingCommandResponse> {
-    return commandStore.getAllCommandsForAggregate(aggregateId)
-  }
+  ) = commandStore.getAllCommandsForAggregate(aggregateId)
 }

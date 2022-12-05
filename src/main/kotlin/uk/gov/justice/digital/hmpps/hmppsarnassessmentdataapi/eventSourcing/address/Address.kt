@@ -112,7 +112,7 @@ class Address(
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
 
-    fun aggregate(events: List<EventEntity>) = events
+    fun aggregateFrom(events: List<EventEntity>) = events
       .sortedBy { it.createdOn }
       .fold(AddressState()) { state: AddressState, event: EventEntity -> applyEvent(state, event) }
 
@@ -123,7 +123,7 @@ class Address(
 
     private fun applyEvent(state: AddressState, eventEntity: EventEntity): AddressState {
       return when (eventEntity.eventType) {
-        ADDRESS_DETAILS_UPDATED -> apply(state, eventEntity.into())
+        ADDRESS_DETAILS_UPDATED -> apply(state, eventEntity.into<AddressDetailsUpdatedEvent>())
         else -> state // skip events that don't build the aggregate
       }
     }

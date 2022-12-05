@@ -5,9 +5,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressState
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.AddressType
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.PersonState
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.read.PersonQueryService
 import java.util.UUID
 
@@ -18,14 +15,10 @@ class PersonController(
   @RequestMapping(path = ["/person/{aggregateId}/addresses"], method = [RequestMethod.GET])
   fun getAddressesForPerson(
     @Parameter(required = true) @PathVariable aggregateId: UUID,
-  ): Map<AddressType, AddressState> {
-    return personQueryService.getApprovedAddresses(aggregateId)
-  }
+  ) = personQueryService.getApprovedAddresses(aggregateId)
 
   @RequestMapping(path = ["/person/{aggregateId}"], method = [RequestMethod.GET])
   fun getPerson(
     @Parameter(required = true) @PathVariable aggregateId: UUID,
-  ): PersonState {
-    return personQueryService.getPerson(aggregateId)
-  }
+  ) = personQueryService.getPerson(aggregateId)
 }

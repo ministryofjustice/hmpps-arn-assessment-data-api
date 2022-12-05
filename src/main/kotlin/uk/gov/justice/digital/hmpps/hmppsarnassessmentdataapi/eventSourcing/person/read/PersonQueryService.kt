@@ -6,7 +6,6 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.addr
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.AddressType
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.Person
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.PersonMovedAddressEvent
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.PersonState
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.repositories.EventRepository
 import java.util.UUID
 
@@ -28,17 +27,12 @@ class PersonQueryService(
 
     val addresses = addressEvents
       .groupBy { it.aggregateId }
-      .mapValues { (_, addressEvents) -> Address.aggregate(addressEvents) }
+      .mapValues { (_, addressEvents) -> Address.aggregateFrom(addressEvents) }
 
     return personAddresses.mapValues { (_, value) -> addresses[value]!! }
   }
 
-  fun getPerson(personId: UUID): PersonState {
-    val personEvents = eventRepository.findAllByAggregateId(personId)
-
-    return Person.aggregate(
-      personEvents
-        .sortedBy { it.createdOn }
-    )
+  fun getPerson(personId: UUID) = eventRepository.findAllByAggregateId(personId).let { events ->
+    Person.aggregateFrom(events.sortedBy { it.createdOn })
   }
 }

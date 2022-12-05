@@ -8,4 +8,5 @@ import java.util.UUID
 @Repository
 interface AggregateRepository : JpaRepository<AggregateEntity, Long> {
   fun existsByUuid(aggregateId: UUID): Boolean
+  fun findByUuid(aggregateId: UUID): AggregateEntity?
 }

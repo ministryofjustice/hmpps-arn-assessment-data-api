@@ -45,12 +45,10 @@ data class CommandRequest(
   }
 
   companion object {
-    fun from(commandEntity: CommandEntity): CommandRequest {
-      return CommandRequest(
-        type = commandEntity.type,
-        values = commandEntity.into(),
-      )
-    }
+    fun from(commandEntity: CommandEntity) = CommandRequest(
+      type = commandEntity.type,
+      values = commandEntity.into(),
+    )
   }
 }
 
@@ -59,21 +57,17 @@ class CommandHandler(
   val address: Address,
   val person: Person,
 ) {
-  fun handleAll(commands: List<CommandRequest>): List<CommandResponse> {
-    return commands.map { handle(it) }.flatten()
-  }
+  fun handleAll(commands: List<CommandRequest>) = commands.map { handle(it) }.flatten()
 
-  fun handle(command: CommandRequest): List<CommandResponse> {
-    return when (command.type) {
-      CREATE_NEW_ADDRESS -> address.handle(command.into<CreateNewAddressCommand>())
-      PROPOSE_UPDATE_ADDRESS_DETAILS -> address.handle(command.into<ProposeUpdateAddressDetailsCommand>())
-      APPROVE_UPDATE_ADDRESS_DETAILS -> address.handle(command.into<ApproveUpdateAddressDetailsCommand>())
-      UPDATE_ADDRESS_DETAILS -> address.handle(command.into<UpdateAddressDetailsCommand>())
-      CREATE_NEW_PERSON -> person.handle(command.into<CreateNewPersonCommand>())
-      PROPOSE_UPDATE_PERSON_DETAILS -> person.handle(command.into<ProposeUpdatePersonDetailsCommand>())
-      APPROVE_UPDATE_PERSON_DETAILS -> person.handle(command.into<ApproveUpdatePersonDetailsCommand>())
-      UPDATE_PERSON_DETAILS -> person.handle(command.into<UpdatePersonDetailsCommand>())
-      MOVE_PERSONS_ADDRESS -> person.handle(command.into<MovePersonAddressCommand>())
-    }
+  fun handle(command: CommandRequest) = when (command.type) {
+    CREATE_NEW_ADDRESS -> address.handle(command.into<CreateNewAddressCommand>())
+    PROPOSE_UPDATE_ADDRESS_DETAILS -> address.handle(command.into<ProposeUpdateAddressDetailsCommand>())
+    APPROVE_UPDATE_ADDRESS_DETAILS -> address.handle(command.into<ApproveUpdateAddressDetailsCommand>())
+    UPDATE_ADDRESS_DETAILS -> address.handle(command.into<UpdateAddressDetailsCommand>())
+    CREATE_NEW_PERSON -> person.handle(command.into<CreateNewPersonCommand>())
+    PROPOSE_UPDATE_PERSON_DETAILS -> person.handle(command.into<ProposeUpdatePersonDetailsCommand>())
+    APPROVE_UPDATE_PERSON_DETAILS -> person.handle(command.into<ApproveUpdatePersonDetailsCommand>())
+    UPDATE_PERSON_DETAILS -> person.handle(command.into<UpdatePersonDetailsCommand>())
+    MOVE_PERSONS_ADDRESS -> person.handle(command.into<MovePersonAddressCommand>())
   }
 }

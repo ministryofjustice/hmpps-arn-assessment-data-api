@@ -1,14 +1,18 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities
 
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AggregateType
+import java.io.Serializable
 import java.util.UUID
 import javax.persistence.Column
 import javax.persistence.Entity
-import javax.persistence.EnumType
+import javax.persistence.EnumType.STRING
 import javax.persistence.Enumerated
+import javax.persistence.FetchType.EAGER
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType.IDENTITY
 import javax.persistence.Id
+import javax.persistence.JoinColumn
+import javax.persistence.OneToMany
 import javax.persistence.Table
 
 @Entity
@@ -23,6 +27,10 @@ data class AggregateEntity(
   val uuid: UUID = UUID.randomUUID(),
 
   @Column(name = "aggregate_type")
-  @Enumerated(EnumType.STRING)
+  @Enumerated(STRING)
   val aggregateType: AggregateType,
-)
+
+  @OneToMany(orphanRemoval = true, fetch = EAGER)
+  @JoinColumn(name = "aggregate_id", referencedColumnName = "uuid")
+  val events: List<EventEntity>
+) : Serializable

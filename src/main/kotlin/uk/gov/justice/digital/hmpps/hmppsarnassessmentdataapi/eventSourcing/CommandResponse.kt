@@ -10,12 +10,10 @@ data class CommandResponse(
   val values: Map<String, String>
 ) {
   companion object {
-    fun from(event: EventEntity): CommandResponse {
-      return CommandResponse(
-        event.aggregateId,
-        event.eventType,
-        JsonEventValues.deserialize(event.event_values)!!,
-      )
-    }
+    fun from(event: EventEntity) = CommandResponse(
+      event.aggregateId,
+      event.eventType,
+      JsonEventValues.deserialize(event.eventValues)!!,
+    )
   }
 }

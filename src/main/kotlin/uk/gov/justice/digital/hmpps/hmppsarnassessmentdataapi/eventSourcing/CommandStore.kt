@@ -31,15 +31,10 @@ class CommandStore(
     return entity.uuid
   }
 
-  fun getCommand(commandId: UUID): CommandRequest? {
-    return commandRepository.findByUuid(commandId)?.let { CommandRequest.from(it) }
-  }
+  fun getCommand(commandId: UUID) = commandRepository.findByUuid(commandId)?.let { CommandRequest.from(it) }
 
-  fun getAllCommandsForAggregate(aggregateId: UUID): List<PendingCommandResponse> {
-    return commandRepository.findByAggregateId(aggregateId).map { PendingCommandResponse.from(it) }
-  }
+  fun getAllCommandsForAggregate(aggregateId: UUID) =
+    commandRepository.findByAggregateId(aggregateId).map { PendingCommandResponse.from(it) }
 
-  fun removeCommand(commandId: UUID) {
-    commandRepository.removeByUuid(commandId)
-  }
+  fun removeCommand(commandId: UUID) = commandRepository.removeByUuid(commandId)
 }

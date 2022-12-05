@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 import javax.persistence.Column
 import javax.persistence.Entity
-import javax.persistence.EnumType
+import javax.persistence.EnumType.STRING
 import javax.persistence.Enumerated
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType.IDENTITY
@@ -24,7 +24,7 @@ import javax.persistence.Table
   TypeDef(name = "json", typeClass = JsonStringType::class),
   TypeDef(name = "jsonb", typeClass = JsonBinaryType::class)
 )
-class EventEntity(
+data class EventEntity(
   @Id
   @Column(name = "id")
   @GeneratedValue(strategy = IDENTITY)
@@ -43,24 +43,22 @@ class EventEntity(
   val aggregateId: UUID,
 
   @Column(name = "event_type")
-  @Enumerated(EnumType.STRING)
+  @Enumerated(STRING)
   val eventType: EventType,
 
   @Type(type = "json")
   @Column(columnDefinition = "jsonb", name = "event_values")
-  val event_values: String
+  val eventValues: String
 ) {
   final inline fun <reified T : Any> into(): T {
-    return JsonEventValues.deserialize(event_values)!!
+    return JsonEventValues.deserialize(eventValues)!!
   }
 
   companion object {
-    fun from(aggregateId: UUID, eventType: EventType, values: Any = emptyMap<String, String>()): EventEntity {
-      return EventEntity(
-        aggregateId = aggregateId,
-        eventType = eventType,
-        event_values = JsonEventValues.serialize(values),
-      )
-    }
+    fun from(aggregateId: UUID, eventType: EventType, values: Any = emptyMap<String, String>()) = EventEntity(
+      aggregateId = aggregateId,
+      eventType = eventType,
+      eventValues = JsonEventValues.serialize(values),
+    )
   }
 }

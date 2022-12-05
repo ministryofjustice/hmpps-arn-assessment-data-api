@@ -7,12 +7,10 @@ import java.util.UUID
 
 @Service
 class AggregateStore(private val aggregateRepository: AggregateRepository) {
-  fun checkAggregateRootExists(aggregateId: UUID): Boolean {
-    return aggregateRepository.existsByUuid(aggregateId)
-  }
+  fun checkAggregateRootExists(aggregateId: UUID) = aggregateRepository.existsByUuid(aggregateId)
 
   fun createAggregateRoot(aggregateType: AggregateType): UUID {
-    val newAggregate = AggregateEntity(aggregateType = aggregateType)
+    val newAggregate = AggregateEntity(aggregateType = aggregateType, events = emptyList())
     aggregateRepository.save(newAggregate)
     return newAggregate.uuid
   }

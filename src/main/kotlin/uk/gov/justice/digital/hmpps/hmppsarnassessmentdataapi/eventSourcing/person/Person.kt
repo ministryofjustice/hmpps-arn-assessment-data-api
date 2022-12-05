@@ -131,7 +131,7 @@ class Person(
   }
 
   companion object {
-    fun aggregate(events: List<EventEntity>) = events
+    fun aggregateFrom(events: List<EventEntity>) = events
       .sortedBy { it.createdOn }
       .fold(PersonState()) { state: PersonState, event: EventEntity -> applyEvent(state, event) }
 
@@ -143,7 +143,7 @@ class Person(
 
     private fun applyEvent(state: PersonState, event: EventEntity): PersonState {
       return when (event.eventType) {
-        PERSON_DETAILS_UPDATED -> apply(state, event.into())
+        PERSON_DETAILS_UPDATED -> apply(state, event.into<PersonDetailsUpdatedEvent>())
         else -> state
       }
     }

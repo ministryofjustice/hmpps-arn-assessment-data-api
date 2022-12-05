@@ -1,12 +1,14 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities
 
-import java.io.Serializable
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.Person
 import java.time.LocalDateTime
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
+import javax.persistence.GenerationType.IDENTITY
 import javax.persistence.Id
+import javax.persistence.JoinColumn
+import javax.persistence.ManyToOne
 import javax.persistence.OneToMany
 import javax.persistence.Table
 
@@ -15,7 +17,7 @@ import javax.persistence.Table
 data class AssessmentEntity(
   @Id
   @Column(name = "id")
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = IDENTITY)
   val id: Long? = null,
 
   @Column(name = "assessment_type")
@@ -31,7 +33,19 @@ data class AssessmentEntity(
   @Column(name = "created_date")
   val createdDate: LocalDateTime? = LocalDateTime.now(),
 
+  @Column(name = "updated_on_date")
+  var updatedOnDate: LocalDateTime? = LocalDateTime.now(),
+
   @Column(name = "completed_date")
   val completedDate: LocalDateTime? = null,
 
-) : Serializable
+  @ManyToOne
+  @JoinColumn(name = "subject", referencedColumnName = "uuid")
+  private val offender: AggregateEntity? = null
+) {
+  fun getOffender() = offender?.let {
+    Person.aggregateFrom(
+      offender.events.filter { it.createdOn < updatedOnDate }
+    )
+  }
+}

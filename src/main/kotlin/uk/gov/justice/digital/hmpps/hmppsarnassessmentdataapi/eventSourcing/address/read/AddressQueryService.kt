@@ -9,12 +9,7 @@ import java.util.UUID
 class AddressQueryService(
   val eventRepository: EventRepository,
 ) {
-  fun getAddress(addressId: UUID): AddressState {
-    val addressEvents = eventRepository.findAllByAggregateId(addressId)
-
-    return Address.aggregate(
-      addressEvents
-        .sortedBy { it.createdOn }
-    )
+  fun getAddress(addressId: UUID) = eventRepository.findAllByAggregateId(addressId).let { events ->
+    Address.aggregateFrom(events.sortedBy { it.createdOn })
   }
 }

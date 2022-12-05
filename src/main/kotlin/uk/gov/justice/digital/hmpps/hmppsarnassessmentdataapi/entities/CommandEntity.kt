@@ -48,12 +48,10 @@ class CommandEntity(
   }
 
   companion object {
-    fun from(aggregateId: UUID, commandType: CommandType, values: Any = emptyMap<String, String>()): CommandEntity {
-      return CommandEntity(
-        aggregateId = aggregateId,
-        type = commandType,
-        values = JsonEventValues.serialize(values),
-      )
-    }
+    fun from(aggregateId: UUID, commandType: CommandType, values: Any = emptyMap<String, String>()) = CommandEntity(
+      aggregateId = aggregateId,
+      type = commandType,
+      values = JsonEventValues.serialize(values),
+    )
   }
 }

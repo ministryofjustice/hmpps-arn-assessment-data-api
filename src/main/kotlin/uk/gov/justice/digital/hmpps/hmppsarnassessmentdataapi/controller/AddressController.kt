@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressQueryService
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressState
 import java.util.UUID
 
 @RestController
@@ -16,7 +15,5 @@ class AddressController(
   @RequestMapping(path = ["/address/{aggregateId}"], method = [RequestMethod.GET])
   fun getAddress(
     @Parameter(required = true) @PathVariable aggregateId: UUID,
-  ): AddressState? {
-    return addressQueryService.getAddress(aggregateId)
-  }
+  ) = addressQueryService.getAddress(aggregateId)
 }
