@@ -35,14 +35,16 @@ class Address(
 
     eventRepository.save(createdEvent)
 
-    val updatedEvent = EventEntity.from(
-      aggregateId = aggregateId,
-      eventType = ADDRESS_DETAILS_UPDATED,
-      values = AddressDetailsUpdatedEvent(
-        building = command.building,
-        postcode = command.postcode,
-      ),
-    )
+    val updatedEvent = with(command) {
+      EventEntity.from(
+        aggregateId = aggregateId,
+        eventType = ADDRESS_DETAILS_UPDATED,
+        values = AddressDetailsUpdatedEvent(
+          building = building,
+          postcode = postcode,
+        ),
+      )
+    }
 
     eventRepository.save(updatedEvent)
 
@@ -55,14 +57,17 @@ class Address(
   }
 
   fun handle(command: ProposeUpdateAddressDetailsCommand): List<CommandResponse> {
-    val commandUUID = commandStore.save(
-      command.aggregateId, UPDATE_ADDRESS_DETAILS,
-      UpdateAddressDetailsCommand(
-        aggregateId = command.aggregateId,
-        building = command.building,
-        postcode = command.postcode,
+    val commandUUID = with(command) {
+      commandStore.save(
+        aggregateId,
+        UPDATE_ADDRESS_DETAILS,
+        UpdateAddressDetailsCommand(
+          aggregateId = aggregateId,
+          building = building,
+          postcode = postcode,
+        )
       )
-    )
+    }
 
     return listOf(CommandResponse(command.aggregateId, PROPOSED_CHANGES, mapOf("commandId" to commandUUID.toString())))
   }
@@ -91,14 +96,16 @@ class Address(
   fun handle(command: UpdateAddressDetailsCommand): List<CommandResponse> {
     val addressExists = aggregateStore.checkAggregateRootExists(command.aggregateId)
 
-    val event = EventEntity.from(
-      aggregateId = command.aggregateId,
-      eventType = ADDRESS_DETAILS_UPDATED,
-      values = AddressDetailsUpdatedEvent(
-        building = command.building,
-        postcode = command.postcode,
+    val event = with(command) {
+      EventEntity.from(
+        aggregateId = aggregateId,
+        eventType = ADDRESS_DETAILS_UPDATED,
+        values = AddressDetailsUpdatedEvent(
+          building = building,
+          postcode = postcode,
+        )
       )
-    )
+    }
 
     // can we make this smarter? like a diff?
     if (addressExists) {

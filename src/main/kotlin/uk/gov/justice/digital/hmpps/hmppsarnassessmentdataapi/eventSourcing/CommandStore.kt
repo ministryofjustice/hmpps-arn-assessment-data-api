@@ -11,11 +11,11 @@ class PendingCommandResponse(
   val commandValues: Map<String, String>,
 ) {
   companion object {
-    fun from(commandEntity: CommandEntity): PendingCommandResponse {
-      return PendingCommandResponse(
-        commandId = commandEntity.uuid,
-        commandType = commandEntity.type,
-        commandValues = commandEntity.into(),
+    fun from(commandEntity: CommandEntity) = with(commandEntity) {
+      PendingCommandResponse(
+        commandId = uuid,
+        commandType = type,
+        commandValues = into(),
       )
     }
   }

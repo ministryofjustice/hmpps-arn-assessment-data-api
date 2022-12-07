@@ -46,15 +46,17 @@ class Person(
 
     eventRepository.save(createdEvent)
 
-    val updatedEvent = EventEntity.from(
-      aggregateId = aggregateId,
-      eventType = PERSON_DETAILS_UPDATED,
-      values = PersonDetailsUpdatedEvent(
-        givenName = command.givenName,
-        familyName = command.familyName,
-        dateOfBirth = command.dateOfBirth,
+    val updatedEvent = with(command) {
+      EventEntity.from(
+        aggregateId = aggregateId,
+        eventType = PERSON_DETAILS_UPDATED,
+        values = PersonDetailsUpdatedEvent(
+          givenName = givenName,
+          familyName = familyName,
+          dateOfBirth = dateOfBirth,
+        )
       )
-    )
+    }
 
     eventRepository.save(updatedEvent)
 
@@ -65,15 +67,18 @@ class Person(
   }
 
   fun handle(command: ProposeUpdatePersonDetailsCommand): List<CommandResponse> {
-    val commandUUID = commandStore.save(
-      command.aggregateId, UPDATE_PERSON_DETAILS,
-      UpdatePersonDetailsCommand(
-        aggregateId = command.aggregateId,
-        givenName = command.givenName,
-        familyName = command.familyName,
-        dateOfBirth = command.dateOfBirth,
+    val commandUUID = with(command) {
+      commandStore.save(
+        aggregateId,
+        UPDATE_PERSON_DETAILS,
+        UpdatePersonDetailsCommand(
+          aggregateId = aggregateId,
+          givenName = givenName,
+          familyName = familyName,
+          dateOfBirth = dateOfBirth,
+        )
       )
-    )
+    }
 
     return listOf(CommandResponse(command.aggregateId, PROPOSED_CHANGES, mapOf("commandId" to commandUUID.toString())))
   }
@@ -100,15 +105,17 @@ class Person(
   }
 
   fun handle(command: UpdatePersonDetailsCommand): List<CommandResponse> {
-    val event = EventEntity.from(
-      aggregateId = command.aggregateId,
-      eventType = PERSON_DETAILS_UPDATED,
-      values = PersonDetailsUpdatedEvent(
-        givenName = command.givenName,
-        familyName = command.familyName,
-        dateOfBirth = command.dateOfBirth,
+    val event = with(command) {
+      EventEntity.from(
+        aggregateId = aggregateId,
+        eventType = PERSON_DETAILS_UPDATED,
+        values = PersonDetailsUpdatedEvent(
+          givenName = givenName,
+          familyName = familyName,
+          dateOfBirth = dateOfBirth,
+        )
       )
-    )
+    }
 
     eventRepository.save(event)
 
@@ -116,14 +123,16 @@ class Person(
   }
 
   fun handle(command: MovePersonAddressCommand): List<CommandResponse> {
-    val event = EventEntity.from(
-      aggregateId = command.aggregateId,
-      eventType = PERSON_MOVED_ADDRESS,
-      values = PersonMovedAddressEvent(
-        addressUUID = command.addressId,
-        addressType = command.addressType,
+    val event = with(command) {
+      EventEntity.from(
+        aggregateId = aggregateId,
+        eventType = PERSON_MOVED_ADDRESS,
+        values = PersonMovedAddressEvent(
+          addressUUID = addressId,
+          addressType = addressType,
+        )
       )
-    )
+    }
 
     eventRepository.save(event)
 
