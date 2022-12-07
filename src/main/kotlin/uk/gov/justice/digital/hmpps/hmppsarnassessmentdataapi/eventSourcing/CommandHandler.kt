@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities.CommandEntity
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandType.APPROVE_UPDATE_ADDRESS_DETAILS
@@ -59,9 +61,14 @@ class CommandHandler(
   val address: Address,
   val person: Person,
 ) {
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
+
   fun handleAll(commands: List<CommandRequest>) = commands.map { handle(it) }.flatten()
 
   fun handle(command: CommandRequest) = with(command) {
+    log.info("Command '$type' received'")
     when (type) {
       CREATE_NEW_ADDRESS -> address.handle(into<CreateNewAddressCommand>())
       PROPOSE_UPDATE_ADDRESS_DETAILS -> address.handle(into<ProposeUpdateAddressDetailsCommand>())
@@ -73,5 +80,5 @@ class CommandHandler(
       UPDATE_PERSON_DETAILS -> person.handle(into<UpdatePersonDetailsCommand>())
       MOVE_PERSONS_ADDRESS -> person.handle(into<MovePersonAddressCommand>())
     }
-  }
+  }.onEach { event -> log.info("Event '${event.eventType}' created for aggregate ID '${event.aggregateId}'") }
 }
