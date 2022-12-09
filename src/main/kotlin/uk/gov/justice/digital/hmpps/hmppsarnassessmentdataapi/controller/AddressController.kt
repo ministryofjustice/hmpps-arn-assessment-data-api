@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressQueryService
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressState
 import java.util.UUID
 
 @RestController
@@ -14,5 +15,7 @@ class AddressController(
   @GetMapping("/address/{aggregateId}")
   fun getAddress(
     @Parameter(required = true) @PathVariable aggregateId: UUID,
-  ) = addressQueryService.getAddress(aggregateId)
+  ): AddressState {
+    return addressQueryService.getAddress(aggregateId)
+  }
 }

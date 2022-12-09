@@ -13,20 +13,14 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Even
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.PERSON_MOVED_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.PROPOSED_CHANGES
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.Address
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.read.PersonState
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.repositories.EventRepository
-import java.time.LocalDate
 import javax.transaction.Transactional
 
 enum class AddressType {
   PRIMARY_RESIDENCE,
   KNOWN_ADDRESS,
 }
-
-data class PersonState(
-  val givenName: String? = null,
-  val familyName: String? = null,
-  val dateOfBirth: LocalDate? = null,
-)
 
 @Service
 class Person(

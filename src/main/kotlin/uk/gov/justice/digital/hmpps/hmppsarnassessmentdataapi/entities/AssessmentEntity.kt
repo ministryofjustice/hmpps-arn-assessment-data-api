@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities
 
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.Person
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.read.PersonState
 import java.time.LocalDateTime
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -43,9 +44,11 @@ data class AssessmentEntity(
   @JoinColumn(name = "subject", referencedColumnName = "uuid")
   private val offender: AggregateEntity? = null
 ) {
-  fun getOffender() = offender?.let {
-    Person.aggregateFrom(
-      offender.events.filter { it.createdOn < updatedOnDate }
-    )
+  fun getOffender(): PersonState? {
+    return offender?.let {
+      Person.aggregateFrom(
+        offender.events.filter { it.createdOn < updatedOnDate }
+      )
+    }
   }
 }
