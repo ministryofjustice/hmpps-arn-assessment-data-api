@@ -47,7 +47,7 @@ data class AssessmentEntity(
   fun getOffender(): PersonState? {
     return offender?.let {
       Person.aggregateFrom(
-        offender.events.filter { it.createdOn < updatedOnDate }
+        it.events.filter { event -> event.createdOn < updatedOnDate }
       )
     }
   }

@@ -144,11 +144,9 @@ class Person(
       dateOfBirth = event.dateOfBirth ?: state.dateOfBirth,
     )
 
-    private fun applyEvent(state: PersonState, event: EventEntity): PersonState {
-      return when (event.eventType) {
-        PERSON_DETAILS_UPDATED -> apply(state, event.into<PersonDetailsUpdatedEvent>())
-        else -> state
-      }
+    private fun applyEvent(state: PersonState, event: EventEntity) = when (event.eventType) {
+      PERSON_DETAILS_UPDATED -> apply(state, event.into<PersonDetailsUpdatedEvent>())
+      else -> state
     }
   }
 }

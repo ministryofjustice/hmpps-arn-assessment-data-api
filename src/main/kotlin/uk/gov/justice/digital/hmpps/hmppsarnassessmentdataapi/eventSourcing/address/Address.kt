@@ -128,11 +128,9 @@ class Address(
       postcode = event.postcode ?: state.postcode,
     )
 
-    private fun applyEvent(state: AddressState, eventEntity: EventEntity): AddressState {
-      return when (eventEntity.eventType) {
-        ADDRESS_DETAILS_UPDATED -> apply(state, eventEntity.into<AddressDetailsUpdatedEvent>())
-        else -> state // skip events that don't build the aggregate
-      }
+    private fun applyEvent(state: AddressState, eventEntity: EventEntity) = when (eventEntity.eventType) {
+      ADDRESS_DETAILS_UPDATED -> apply(state, eventEntity.into<AddressDetailsUpdatedEvent>())
+      else -> state // skip events that don't build the aggregate
     }
   }
 }

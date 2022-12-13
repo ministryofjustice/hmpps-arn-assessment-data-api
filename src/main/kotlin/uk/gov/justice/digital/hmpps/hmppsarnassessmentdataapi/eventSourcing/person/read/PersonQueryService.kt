@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.read
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.PERSON_MOVED_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.Address
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressState
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.AddressType
@@ -18,18 +19,19 @@ class PersonQueryService(
 
     val personAddresses = personEvents
       .asSequence()
+      .filter { it.eventType == PERSON_MOVED_ADDRESS }
       .sortedBy { it.createdOn }
       .map { it.into<PersonMovedAddressEvent>() }
       .groupBy { it.addressType }
-      .mapValues { (_, value) -> value.last().addressUUID }
+      .mapValues { it.value.last().addressUUID }
 
     val addressEvents = eventRepository.findAllByAggregateIdIn(personAddresses.values.toList())
 
     val addresses = addressEvents
       .groupBy { it.aggregateId }
-      .mapValues { (_, addressEvents) -> Address.aggregateFrom(addressEvents) }
+      .mapValues { Address.aggregateFrom(it.value) }
 
-    return personAddresses.mapValues { (_, value) -> addresses[value]!! }
+    return personAddresses.mapValues { addresses[it.value]!! }
   }
 
   fun getPerson(personId: UUID) = eventRepository.findAllByAggregateId(personId).let { events ->

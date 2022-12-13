@@ -16,11 +16,9 @@ val dateConverter = object : Converter {
   override fun canConvert(cls: Class<*>) = cls == LocalDate::class.java
 
   override fun fromJson(jv: JsonValue) =
-    if (jv.string != null) {
-      LocalDate.parse(jv.string, DateTimeFormatter.ISO_DATE)
-    } else {
-      throw KlaxonException("Couldn't parse date: ${jv.string}")
-    }
+    jv.string?.let {
+      LocalDate.parse(it, DateTimeFormatter.ISO_DATE)
+    } ?: throw KlaxonException("Couldn't parse date: ${jv.string}")
 
   override fun toJson(value: Any) = """ "${(value as LocalDate).format(DateTimeFormatter.ISO_DATE)}" """
 }
@@ -32,11 +30,9 @@ val uuidConverter = object : Converter {
   override fun canConvert(cls: Class<*>) = cls == UUID::class.java
 
   override fun fromJson(jv: JsonValue) =
-    if (jv.string != null) {
-      UUID.fromString(jv.string)
-    } else {
-      throw KlaxonException("Couldn't parse UUID: ${jv.string}")
-    }
+    jv.string?.let {
+      UUID.fromString(it)
+    } ?: throw KlaxonException("Couldn't parse UUID: ${jv.string}")
 
   override fun toJson(value: Any) = """ "${(value as UUID)}" """
 }
@@ -48,11 +44,9 @@ val addressTypeConverter = object : Converter {
   override fun canConvert(cls: Class<*>) = cls == AddressType::class.java
 
   override fun fromJson(jv: JsonValue) =
-    if (jv.string != null) {
-      AddressType.valueOf(jv.string!!)
-    } else {
-      throw KlaxonException("Couldn't parse UUID: ${jv.string}")
-    }
+    jv.string?.let {
+      AddressType.valueOf(it)
+    } ?: throw KlaxonException("Couldn't parse address type: ${jv.string}")
 
   override fun toJson(value: Any) = """ "${(value as AddressType)}" """
 }
