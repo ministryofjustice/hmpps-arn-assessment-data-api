@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.per
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.PERSON_MOVED_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.Address
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressState
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressProjection
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.AddressType
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.Person
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.PersonMovedAddressEvent
@@ -14,7 +14,7 @@ import java.util.UUID
 class PersonQueryService(
   val eventRepository: EventRepository,
 ) {
-  fun getApprovedAddresses(personId: UUID): Map<AddressType, AddressState> {
+  fun getApprovedAddresses(personId: UUID): Map<AddressType, AddressProjection> {
     val personEvents = eventRepository.findAllByAggregateId(personId)
 
     val personAddresses = personEvents
@@ -29,12 +29,12 @@ class PersonQueryService(
 
     val addresses = addressEvents
       .groupBy { it.aggregateId }
-      .mapValues { Address.aggregateFrom(it.value) }
+      .mapValues { Address.createProjectionFrom(it.value) }
 
     return personAddresses.mapValues { addresses[it.value]!! }
   }
 
   fun getPerson(personId: UUID) = eventRepository.findAllByAggregateId(personId).let { events ->
-    Person.aggregateFrom(events.sortedBy { it.createdOn })
+    Person.createProjectionFrom(events.sortedBy { it.createdOn })
   }
 }

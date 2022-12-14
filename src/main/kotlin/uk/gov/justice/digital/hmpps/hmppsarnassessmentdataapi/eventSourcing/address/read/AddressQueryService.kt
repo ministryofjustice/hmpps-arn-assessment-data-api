@@ -10,6 +10,6 @@ class AddressQueryService(
   val eventRepository: EventRepository,
 ) {
   fun getAddress(addressId: UUID) = eventRepository.findAllByAggregateId(addressId).let { events ->
-    Address.aggregateFrom(events.sortedBy { it.createdOn })
+    Address.createProjectionFrom(events.sortedBy { it.createdOn })
   }
 }

@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities
 
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.Person
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.read.PersonState
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.read.PersonProjection
 import java.time.LocalDateTime
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -44,9 +44,9 @@ data class AssessmentEntity(
   @JoinColumn(name = "subject", referencedColumnName = "uuid")
   private val offender: AggregateEntity? = null
 ) {
-  fun getOffender(): PersonState? {
+  fun getOffender(): PersonProjection? {
     return offender?.let {
-      Person.aggregateFrom(
+      Person.createProjectionFrom(
         it.events.filter { event -> event.createdOn < updatedOnDate }
       )
     }

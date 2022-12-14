@@ -1,10 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.read
 
 import com.fasterxml.jackson.annotation.JsonView
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Projection
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Views
 import java.time.LocalDate
 
-data class PersonState(
+data class PersonProjection(
   @field:JsonView(Views.Basic::class)
   val givenName: String? = null,
 
@@ -13,7 +14,4 @@ data class PersonState(
 
   @field:JsonView(Views.Basic::class)
   val dateOfBirth: LocalDate? = null,
-
-  @field:JsonView(Views.Probation::class)
-  val obfuscatedField: String? = "Should be hidden outside of probation"
-)
+) : Projection()

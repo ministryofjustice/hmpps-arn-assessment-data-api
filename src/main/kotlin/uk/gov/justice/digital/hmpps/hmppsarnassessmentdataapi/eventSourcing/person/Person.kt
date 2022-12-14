@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Even
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.PERSON_MOVED_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.PROPOSED_CHANGES
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.Address
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.read.PersonState
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.read.PersonProjection
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.repositories.EventRepository
 import javax.transaction.Transactional
 
@@ -134,19 +134,25 @@ class Person(
   }
 
   companion object {
-    fun aggregateFrom(events: List<EventEntity>) = events
-      .sortedBy { it.createdOn }
-      .fold(PersonState()) { state: PersonState, event: EventEntity -> applyEvent(state, event) }
+    fun createProjectionFrom(events: List<EventEntity>): PersonProjection {
+      val person = events
+        .sortedBy { it.createdOn }
+        .fold(PersonProjection()) { projection: PersonProjection, event: EventEntity -> applyEvent(projection, event) }
 
-    private fun apply(state: PersonState, event: PersonDetailsUpdatedEvent) = PersonState(
-      givenName = event.givenName ?: state.givenName,
-      familyName = event.familyName ?: state.familyName,
-      dateOfBirth = event.dateOfBirth ?: state.dateOfBirth,
+      person.addMetaDataFrom(events)
+
+      return person
+    }
+
+    private fun apply(projection: PersonProjection, event: PersonDetailsUpdatedEvent) = PersonProjection(
+      givenName = event.givenName ?: projection.givenName,
+      familyName = event.familyName ?: projection.familyName,
+      dateOfBirth = event.dateOfBirth ?: projection.dateOfBirth,
     )
 
-    private fun applyEvent(state: PersonState, event: EventEntity) = when (event.eventType) {
-      PERSON_DETAILS_UPDATED -> apply(state, event.into<PersonDetailsUpdatedEvent>())
-      else -> state
+    private fun applyEvent(projection: PersonProjection, event: EventEntity) = when (event.eventType) {
+      PERSON_DETAILS_UPDATED -> apply(projection, event.into<PersonDetailsUpdatedEvent>())
+      else -> projection
     }
   }
 }

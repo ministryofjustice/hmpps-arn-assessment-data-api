@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.read.PersonState
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.read.PersonProjection
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.service.AssessmentService
 import java.util.UUID
 
@@ -26,7 +26,7 @@ class AssessmentController(
   @GetMapping("/assessment/{assessmentId}/offender")
   fun getAssessmentSubject(
     @Parameter(required = true) @PathVariable assessmentId: Long,
-  ): PersonState? {
+  ): PersonProjection? {
     return assessmentService.getOffenderForAssessment(assessmentId)
   }
 

@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Even
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.APPROVED_CHANGES
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.CREATED_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.PROPOSED_CHANGES
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressState
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressProjection
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.ApprovedPersonChangesEvent
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.repositories.EventRepository
 import javax.transaction.Transactional
@@ -119,18 +119,24 @@ class Address(
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
 
-    fun aggregateFrom(events: List<EventEntity>) = events
-      .sortedBy { it.createdOn }
-      .fold(AddressState()) { state: AddressState, event: EventEntity -> applyEvent(state, event) }
+    fun createProjectionFrom(events: List<EventEntity>): AddressProjection {
+      val address = events
+        .sortedBy { it.createdOn }
+        .fold(AddressProjection()) { projection: AddressProjection, event: EventEntity -> applyEvent(projection, event) }
 
-    private fun apply(state: AddressState, event: AddressDetailsUpdatedEvent) = AddressState(
-      building = event.building ?: state.building,
-      postcode = event.postcode ?: state.postcode,
+      address.addMetaDataFrom(events)
+
+      return address
+    }
+
+    private fun apply(projection: AddressProjection, event: AddressDetailsUpdatedEvent) = AddressProjection(
+      building = event.building ?: projection.building,
+      postcode = event.postcode ?: projection.postcode,
     )
 
-    private fun applyEvent(state: AddressState, eventEntity: EventEntity) = when (eventEntity.eventType) {
-      ADDRESS_DETAILS_UPDATED -> apply(state, eventEntity.into<AddressDetailsUpdatedEvent>())
-      else -> state // skip events that don't build the aggregate
+    private fun applyEvent(projection: AddressProjection, eventEntity: EventEntity) = when (eventEntity.eventType) {
+      ADDRESS_DETAILS_UPDATED -> apply(projection, eventEntity.into<AddressDetailsUpdatedEvent>())
+      else -> projection // skip events that don't build the aggregate
     }
   }
 }
