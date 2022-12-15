@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.ChangeDto
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventDto
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Views
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.read.PersonProjection
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.read.PersonQueryService
@@ -25,5 +27,20 @@ class PersonController(
     @Parameter(required = true) @PathVariable aggregateId: UUID,
   ): PersonProjection {
     return personQueryService.getPerson(aggregateId)
+  }
+
+  @GetMapping("/person/{aggregateId}/events")
+  fun getEvents(
+    @Parameter(required = true) @PathVariable aggregateId: UUID,
+  ): List<EventDto> {
+    return personQueryService.getEvents(aggregateId)
+  }
+
+  @GetMapping("/person/{aggregateId}/events/{eventId}")
+  fun getEvents(
+    @Parameter(required = true) @PathVariable aggregateId: UUID,
+    @Parameter(required = true) @PathVariable eventId: UUID,
+  ): Map<String, ChangeDto> {
+    return personQueryService.getChanges(aggregateId, eventId)
   }
 }

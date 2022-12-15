@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities.EventEntity
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AggregateStore
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AggregateType.PERSON
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.ChangeDto
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandResponse
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandStore
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.CommandType.UPDATE_PERSON_DETAILS
@@ -15,7 +16,10 @@ import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.Even
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.Address
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.read.PersonProjection
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.repositories.EventRepository
+import java.util.Objects
+import java.util.UUID
 import javax.transaction.Transactional
+import kotlin.reflect.full.memberProperties
 
 enum class AddressType {
   PRIMARY_RESIDENCE,
@@ -134,6 +138,26 @@ class Person(
   }
 
   companion object {
+    fun getChangesForEvent(eventId: UUID, events: List<EventEntity>): Map<String, ChangeDto> {
+      return events.find { it.uuid == eventId }?.let { event ->
+        val proposed = createProjectionFrom(listOf(event))
+
+        val eventsBefore = events.sortedBy { it.createdOn }.slice(0 until events.indexOf(event))
+        val current = createProjectionFrom(eventsBefore)
+
+        return PersonProjection::class.memberProperties
+          .filter {
+            !Objects.equals(it.get(proposed), it.get(current))
+          }
+          .associate {
+            it.name to ChangeDto(
+              from = it.get(current).toString(),
+              to = it.get(proposed).toString()
+            )
+          }
+      } ?: emptyMap()
+    }
+
     fun createProjectionFrom(events: List<EventEntity>): PersonProjection {
       val person = events
         .sortedBy { it.createdOn }

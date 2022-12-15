@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person.read
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventDto
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventType.PERSON_MOVED_ADDRESS
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.Address
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressProjection
@@ -37,4 +38,12 @@ class PersonQueryService(
   fun getPerson(personId: UUID) = eventRepository.findAllByAggregateId(personId).let { events ->
     Person.createProjectionFrom(events.sortedBy { it.createdOn })
   }
+
+  fun getChanges(personId: UUID, eventUuid: UUID) = eventRepository.findAllByAggregateId(personId).let { events ->
+    Person.getChangesForEvent(eventUuid, events)
+  }
+
+  fun getEvents(personId: UUID) = eventRepository.findAllByAggregateId(personId)
+    .sortedBy { it.createdOn }
+    .map { EventDto.from(it) }
 }
