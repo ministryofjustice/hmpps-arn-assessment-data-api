@@ -40,7 +40,7 @@ class PersonController(
   fun getEvents(
     @Parameter(required = true) @PathVariable aggregateId: UUID,
     @Parameter(required = true) @PathVariable eventId: UUID,
-  ): Map<String, ChangeDto> {
+  ): List<ChangeDto> {
     return personQueryService.getChanges(aggregateId, eventId)
   }
 }

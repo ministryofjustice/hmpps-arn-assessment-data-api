@@ -138,32 +138,35 @@ class Person(
   }
 
   companion object {
-    fun getChangesForEvent(eventId: UUID, events: List<EventEntity>): Map<String, ChangeDto> {
+    fun getChangesForEvent(eventId: UUID, events: List<EventEntity>): List<ChangeDto> {
       return events.find { it.uuid == eventId }?.let { event ->
         val proposed = createProjectionFrom(listOf(event))
 
         val eventsBefore = events.sortedBy { it.createdOn }.slice(0 until events.indexOf(event))
-        val current = createProjectionFrom(eventsBefore)
+        val current = createProjectionFrom(eventsBefore, false)
 
         return PersonProjection::class.memberProperties
           .filter {
             !Objects.equals(it.get(proposed), it.get(current))
           }
-          .associate {
-            it.name to ChangeDto(
+          .map {
+            ChangeDto(
+              field = it.name,
               from = it.get(current).toString(),
               to = it.get(proposed).toString()
             )
           }
-      } ?: emptyMap()
+      } ?: emptyList()
     }
 
-    fun createProjectionFrom(events: List<EventEntity>): PersonProjection {
+    fun createProjectionFrom(events: List<EventEntity>, includeMetaData: Boolean? = true): PersonProjection {
       val person = events
         .sortedBy { it.createdOn }
         .fold(PersonProjection()) { projection: PersonProjection, event: EventEntity -> applyEvent(projection, event) }
 
-      person.addMetaDataFrom(events)
+      if (includeMetaData == true) {
+        person.addMetaDataFrom(events)
+      }
 
       return person
     }
