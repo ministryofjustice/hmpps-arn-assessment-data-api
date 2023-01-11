@@ -16,6 +16,7 @@ class ResourceServerConfiguration : WebSecurityConfigurerAdapter() {
       .antMatchers("/**").permitAll()
       .anyRequest().authenticated()
       .and()
-      .httpBasic()
+      .oauth2ResourceServer()
+      .jwt()
   }
 }

@@ -55,10 +55,11 @@ data class EventEntity(
   }
 
   companion object {
-    fun from(aggregateId: UUID, eventType: EventType, values: Any = emptyMap<String, String>()) = EventEntity(
+    fun from(aggregateId: UUID, eventType: EventType, values: Any = emptyMap<String, String>(), createdBy: String = "Unknown") = EventEntity(
       aggregateId = aggregateId,
       eventType = eventType,
       eventValues = JsonEventValues.serialize(values),
+      createdBy = createdBy
     )
   }
 }

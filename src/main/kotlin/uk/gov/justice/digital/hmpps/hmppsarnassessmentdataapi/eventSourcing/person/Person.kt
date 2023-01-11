@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.person
 
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities.EventEntity
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.AggregateStore
@@ -39,7 +40,8 @@ class Person(
     val createdEvent = EventEntity.from(
       aggregateId = aggregateId,
       eventType = CREATED_PERSON,
-      values = CreatedPersonEvent()
+      values = CreatedPersonEvent(),
+      createdBy = SecurityContextHolder.getContext().authentication.name,
     )
 
     eventRepository.save(createdEvent)
@@ -52,7 +54,8 @@ class Person(
           givenName = givenName,
           familyName = familyName,
           dateOfBirth = dateOfBirth,
-        )
+        ),
+        createdBy = SecurityContextHolder.getContext().authentication.name,
       )
     }
 
@@ -90,7 +93,8 @@ class Person(
     val approvedEvent = EventEntity.from(
       aggregateId = pendingCommand.aggregateId,
       eventType = APPROVED_CHANGES,
-      values = ApprovedPersonChangesEvent()
+      values = ApprovedPersonChangesEvent(),
+      createdBy = SecurityContextHolder.getContext().authentication.name,
     )
 
     eventRepository.save(approvedEvent)
@@ -111,7 +115,8 @@ class Person(
           givenName = givenName,
           familyName = familyName,
           dateOfBirth = dateOfBirth,
-        )
+        ),
+        createdBy = SecurityContextHolder.getContext().authentication.name,
       )
     }
 
@@ -128,7 +133,8 @@ class Person(
         values = PersonMovedAddressEvent(
           addressUUID = addressId,
           addressType = addressType,
-        )
+        ),
+        createdBy = SecurityContextHolder.getContext().authentication.name,
       )
     }
 

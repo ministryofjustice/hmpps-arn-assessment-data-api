@@ -7,7 +7,6 @@ spring:
     name: hmpps-arn-assessment-data-api
   codec:
     max-in-memory-size: 10MB
-
   jackson:
     date-format: "yyyy-MM-dd HH:mm:ss"
     serialization:
@@ -18,14 +17,21 @@ spring:
     properties:
       hibernate:
         show_sql: false
-
   datasource:
     url: 'jdbc:h2:mem:testdb;INIT=create domain if not exists jsonb as text;Mode=PostgreSQL'
-
   profiles:
     group:
       test:
         - "stdout"
+  security:
+    oauth2:
+      client:
+        provider:
+          oauth-service:
+            token-uri: ${oauth.endpoint.url:http://localhost:9090/auth}/oauth/token
+      resourceserver:
+        jwt:
+          issuer-uri: ${oauth.endpoint.url:http://localhost:9090/auth}/issuer
 
 server:
   port: 8080
