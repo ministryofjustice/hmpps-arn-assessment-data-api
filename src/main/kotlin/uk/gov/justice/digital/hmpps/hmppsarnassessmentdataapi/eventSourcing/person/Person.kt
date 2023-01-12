@@ -88,7 +88,6 @@ class Person(
   fun handle(command: ApproveUpdatePersonDetailsCommand): List<CommandResponse> {
     val pendingCommandRequest = commandStore.getCommand(command.commandUUID)!!
     val pendingCommand = pendingCommandRequest.into<UpdatePersonDetailsCommand>()
-    val personDetailsUpdated = handle(pendingCommandRequest.into<UpdatePersonDetailsCommand>()).first()
 
     val approvedEvent = EventEntity.from(
       aggregateId = pendingCommand.aggregateId,
@@ -99,6 +98,8 @@ class Person(
 
     eventRepository.save(approvedEvent)
     commandStore.removeCommand(command.commandUUID)
+
+    val personDetailsUpdated = handle(pendingCommandRequest.into<UpdatePersonDetailsCommand>()).first()
 
     return listOf(
       CommandResponse.from(approvedEvent),

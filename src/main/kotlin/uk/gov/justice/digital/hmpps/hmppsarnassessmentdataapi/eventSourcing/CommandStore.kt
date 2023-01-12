@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.entities.CommandEntity
 import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.repositories.CommandRepository
 import java.util.UUID
+import javax.transaction.Transactional
 
 class PendingCommandResponse(
   val commandId: UUID = UUID.randomUUID(),
@@ -36,5 +37,6 @@ class CommandStore(
   fun getAllCommandsForAggregate(aggregateId: UUID) =
     commandRepository.findByAggregateId(aggregateId).map { PendingCommandResponse.from(it) }
 
+  @Transactional
   fun removeCommand(commandId: UUID) = commandRepository.removeByUuid(commandId)
 }
