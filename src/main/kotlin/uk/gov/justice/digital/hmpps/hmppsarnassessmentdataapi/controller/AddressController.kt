@@ -1,29 +1,38 @@
 package uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.controller
 
 import io.swagger.v3.oas.annotations.Parameter
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressService
-import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressState
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.ChangeDto
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.EventDto
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressProjection
+import uk.gov.justice.digital.hmpps.hmppsarnassessmentdataapi.eventSourcing.address.read.AddressQueryService
 import java.util.UUID
 
 @RestController
 class AddressController(
-  private val addressService: AddressService,
+  private val addressQueryService: AddressQueryService,
 ) {
-  @RequestMapping(path = ["/address/{aggregateId}"], method = [RequestMethod.GET])
+  @GetMapping("/address/{aggregateId}")
   fun getAddress(
     @Parameter(required = true) @PathVariable aggregateId: UUID,
-  ): AddressState? {
-    return AddressState.from(addressService.getCurrent(aggregateId)!!)
+  ): AddressProjection {
+    return addressQueryService.getAddress(aggregateId)
   }
 
-  @RequestMapping(path = ["/address/{aggregateId}/pending"], method = [RequestMethod.GET])
-  fun getPendingChangesForAddress(
+  @GetMapping("/address/{aggregateId}/events")
+  fun getEvents(
     @Parameter(required = true) @PathVariable aggregateId: UUID,
-  ): AddressState {
-    return AddressState.from(addressService.getProposed(aggregateId)!!)
+  ): List<EventDto> {
+    return addressQueryService.getEvents(aggregateId)
+  }
+
+  @GetMapping("/address/{aggregateId}/events/{eventId}")
+  fun getEvents(
+    @Parameter(required = true) @PathVariable aggregateId: UUID,
+    @Parameter(required = true) @PathVariable eventId: UUID,
+  ): Map<String, ChangeDto> {
+    return addressQueryService.getChanges(aggregateId, eventId)
   }
 }

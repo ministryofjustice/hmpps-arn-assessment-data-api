@@ -36,9 +36,6 @@ data class OffenderEntity(
   @Column(name = "created_date")
   val createdDate: LocalDateTime? = LocalDateTime.now(),
 
-//  @OneToMany(mappedBy = "offender", cascade = [CascadeType.ALL])
-//  val assessments: MutableList<AssessmentEntity> = mutableListOf(),
-
 ) : Serializable {
   companion object {
     fun update(offenderDto: OffenderDto, offenderEntity: OffenderEntity) {
